@@ -54,7 +54,7 @@ class Main(QWidget):
         techList           = self.getTechnicals()
         self.comboBox      = QComboBox()
         self.addTechButton = QPushButton("Add Technical")
-        self.techAdjust    = ActionButton("list-remove.png", self)
+        self.techAdjust    = ActionButton("list-remove.png", self, "slider")
 
         self.comboBox.addItems(techList)
 
@@ -165,13 +165,16 @@ class ActionButton(QLabel):
 
     def mousePressEvent(self, event):
 
-        if self.name == "process-stop.png": # delete on a tech
+        if self.objID == "process-stop": # delete on a tech
             self.parent.setParent(None) # Technical parent -> None
             self.parent.parent.layout.removeWidget(self.parent)
-        if self.name == "list-remove.png": # minus button clicked for resizing
+        
+        if self.objID == "slider": # minus button clicked for resizing
             self.holding = True
+        
         if self.objID == "ticker search":
             print "getting symbol data"
+        
         if self.objID == "terminal":
             print "open python terminal"
 
