@@ -1,52 +1,10 @@
 from PySide.QtCore import *
 from PySide.QtGui  import *
+from programValues import *
+
 
 import sys
-MAX_HEIGHT_FACTOR = .5
-TECHNICALS = {
-# ---------------------------------------------------------------------------- #
-"Tech Name" :                                                                   # Name of the Tech
-{
-    "abbr"  : "TN",                                                             # Tech accronim
-    0       : {                                                                 # 1st parameter
-                "name"    : "One",                                              # parameter name
-                "class"   : "QLineEdit",                                        # parameter class type
-                "methods" : [["setText", "Hello!"],                             # methods for class
-                             ["setSizePolicy", (QSizePolicy.Minimum,
-                                                QSizePolicy.Fixed)],]
-                },
 
-    1       : {                                                                 # nth parameter
-                "name"    : "Two",
-                "class"   : "QPushButton",
-                "methods" : [["setText", "Push Me"],
-                             ["setSizePolicy", (QSizePolicy.Minimum,
-                                                QSizePolicy.Fixed)],]
-                },
-},
-# ---------------------------------------------------------------------------- #
-"Another Tech":
-{
-    "abbr"  : "AT",
-
-    0       : {
-                "name"    : "1A",
-                "class"   : "QLineEdit",
-                "methods" : [["setText", "Text for 1A"],
-                             ["setSizePolicy", (QSizePolicy.Minimum,
-                                                QSizePolicy.Fixed)],]
-                },
-
-    1       : {
-                "name"    : "2B",
-                "class"   : "QLineEdit",
-                "methods" : [["setText", "Text for 2b"],
-                             ["setSizePolicy", (QSizePolicy.Minimum,
-                                                QSizePolicy.Fixed)],]
-                },
-},
-# ---------------------------------------------------------------------------- #
-}
 
 class Main(QWidget):
 
@@ -55,7 +13,7 @@ class Main(QWidget):
 
         super(Main, self).__init__(parent)
         layout = QVBoxLayout(self)
-        layout.addLayout(self.setStockLayout())
+        layout.addLayout(self.setToolBar())
         layout.addWidget(QGraphicsView())
         layout.addLayout(self.setTechnicals())
         layout.addWidget(self.setScrollArea())
@@ -70,21 +28,25 @@ class Main(QWidget):
         self.scroll.setWidgetResizable(True)
         return self.scroll
 
-    def setStockLayout(self):
+    def setToolBar(self):
 
         layout = QHBoxLayout()
         layout.addWidget(QLabel("Ticker"))
+        
         self.tickerLine = QLineEdit()
-
         self.tickerLine.setFixedWidth(50)
         self.tickerLine.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-
         layout.addWidget(self.tickerLine)
+        
         symbolSearch = ActionButton("system-search.png", self, "ticker search")
         layout.addWidget(symbolSearch)
-        layout.addStretch()
-        return layout
 
+        layout.addStretch()
+        
+        terminal = ActionButton("terminal.png", self, "terminal")
+        layout.addWidget(terminal)
+        
+        return layout
 
     def setTechnicals(self):
 
@@ -101,15 +63,12 @@ class Main(QWidget):
         layout.addStretch()
         layout.addWidget(self.techAdjust)
         layout.addStretch()
-
         return layout
-
 
     def getTechnicals(self):
         keys = TECHNICALS.keys()
         keys.sort()
         return keys
-
 
     def addTechnical(self):
         name   = self.comboBox.currentText()
@@ -133,18 +92,23 @@ class TechnicalView(QWidget):
         def __init__(self, parent=None, parameters=None, title="blank"):
 
             super(TechnicalView.Technical, self).__init__(parent)
+            
             title = "%s (%s)" % (title, parameters["abbr"])
-            self.setTitle(str(title))
+            self.setTitle(title)
+            
             self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+            
             self.parent = parent
             layout      = QVBoxLayout(self)
-            toolLayout  = QHBoxLayout()
+            layout.addLayout(self.setToolLayout(parameters))
 
-            toolLayout.addLayout(self.setParameters(parameters))
-            toolLayout.addStretch()
-            toolLayout.addLayout(self.setActions())
+        def setToolLayout(self, parameters):
 
-            layout.addLayout(toolLayout)
+            layout = QHBoxLayout()
+            layout.addLayout(self.setParameters(parameters))
+            layout.addStretch()
+            layout.addLayout(self.setActions())
+            return layout
 
         def setActions(self):
 
@@ -157,8 +121,9 @@ class TechnicalView(QWidget):
             layout = QHBoxLayout()
             for action in actionList:
                 if action == "process-stop.png":
-                    layout.addWidget(QLabel("   "))
-                layout.addWidget(ActionButton(action, self))
+                    layout.addWidget(QLabel(" | "))
+                objID = action.split(".")[0]
+                layout.addWidget(ActionButton(action, self, objID))
             return layout
 
         def setParameters(self, parameters):
@@ -169,6 +134,7 @@ class TechnicalView(QWidget):
                 parm = parm()
 
                 for method in parameters[key]["methods"]:
+                    # method == [class method, [args]]
                     try:
                         # method takes one arg
                         getattr(parm, method[0]).__call__(method[1])
@@ -206,6 +172,8 @@ class ActionButton(QLabel):
             self.holding = True
         if self.objID == "ticker search":
             print "getting symbol data"
+        if self.objID == "terminal":
+            print "open python terminal"
 
     def mouseMoveEvent(self, event):
 
@@ -221,7 +189,7 @@ class ActionButton(QLabel):
     def mouseReleaseEvent(self, event):
 
         if self.holding:
-            self.holding = not self.holding
+            self.holding = False
 
 
 app = QApplication([])
