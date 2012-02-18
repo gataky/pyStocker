@@ -1,5 +1,5 @@
 from PySide.QtGui  import *
-from programValues import *
+from globals       import *
 
 from button        import Button
 

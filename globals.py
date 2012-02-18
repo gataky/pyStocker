@@ -48,4 +48,24 @@ TECHNICALS = {
                 },
 },
 # ---------------------------------------------------------------------------- #
+"3":
+{
+    "abbr"  : "3",
+
+    0       : {
+                "name"    : "1A",
+                "class"   : "QLineEdit",
+                "methods" : [["setText", "Text for 1A"],
+                             ["setSizePolicy", (QSizePolicy.Minimum,
+                                                QSizePolicy.Fixed)],]
+                },
+
+    1       : {
+                "name"    : "2B",
+                "class"   : "QLineEdit",
+                "methods" : [["setText", "Text for 2b"],
+                             ["setSizePolicy", (QSizePolicy.Minimum,
+                                                QSizePolicy.Fixed)],]
+                },
+},
 }

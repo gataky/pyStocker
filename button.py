@@ -1,5 +1,6 @@
 from PySide.QtGui  import *
-from programValues import *
+from globals       import *
+from preferences   import Preferences
 
 import os
 
@@ -21,12 +22,10 @@ class Button(QLabel):
     def mousePressEvent(self, event):
 
         if self.id == "GetSymbolData":
-            print "get sumbol data"
-            print self.id, self.parent
-            print self.parent.text()
+            print self.id, self.parent, self.parent.text()
 
         elif self.id == "Terminal":
-            print "open terminal"
+            print self.id, self.parent
 
         elif self.id == "AddTechnical":
             name = self.parent.currentText()
@@ -35,49 +34,61 @@ class Button(QLabel):
         elif self.id == "SlideView":
             self.holding = True
             
-        elif self.id == "Bottom":
-            print self.id
+        elif self.id in ["Up", "Down", "Top", "Bottom"]:            
+            self.moveTechnicals()
             
-        elif self.id == "Top":
-            print self.id
-            
-        elif self.id == "Up":
-            print self.id
-            
-        elif self.id == "Down":
-            print self.id
-
         elif self.id == "Stop":
-            print self.id, self.parent
+            self.removeTechnical()
 
         elif self.id == "UpdateTech":
             print self.id, self.parent
+
+        elif self.id == "Preferences":
+            print self.id, self.parent
+            #Preferences(self.parent)
             
-            print "technicals ===="
-            print self.parent.technicals.children()
-            
-            print "Layout ========"
-            print "Empty?   ", self.parent.technicals.layout().isEmpty()
-            print ".children", self.parent.technicals.layout().children()
-            print ".count   ", self.parent.technicals.layout().count()
-            
-            print "\n\n"
+
             
     def mouseMoveEvent(self, event):
 
         if self.holding:
             dy      = event.pos().y()
             height  = self.parent.scrollArea.geometry().size().height()
-            height -= dy
-
-            maxHeight = self.parent.size().height() * MAX_HEIGHT_FACTOR
+            max     = self.parent.size().height() * MAX_HEIGHT_FACTOR
+            height -= dy            
             # don't allow setting too high and can't have negative numbers
-            if height >= maxHeight or height <= 0:
+            if height >= max or height <= 0:
                 return
             self.parent.scrollArea.setFixedHeight(height)
 
     def mouseReleaseEvent(self, event):
         self.holding = False
+
+    def moveTechnicals(self):
+
+        widgets = self.parent.technicals.widgets
+        index   = widgets.index(self.parent)
+        
+        if   self.id == "Up" and index <> 0:
+            newIndex = index - 1
+        elif self.id == "Down" and index <> len(widgets) - 1:
+            newIndex = index + 1
+        elif self.id == "Top" and index <> 0:
+            newIndex = 0
+        elif self.id == "Bottom" and index <> len(widgets) - 1 :
+            newIndex = len(widgets)
+        else:
+            return
+        
+        map(self.parent.technicals.layout.removeWidget, widgets)
+        widgets.insert(newIndex, widgets.pop(index))
+        map(self.parent.technicals.layout.addWidget, widgets)
+
+    def removeTechnical(self):
+        
+        self.parent.technicals.layout.removeWidget(self.parent)
+        self.parent.setParent(None)
+        self.parent.technicals.widgets.remove(self.parent)
 
 
 if __name__ == "__main__":

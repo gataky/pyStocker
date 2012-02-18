@@ -11,6 +11,7 @@ class Toolbar1(QHBoxLayout):
         symbol = QLabel("Ticker")
         entry  = QLineEdit()
         search = Button(entry, "search.png", "GetSymbolData")
+        pref   = Button(parent, "preferences.png", "Preferences")
         term   = Button(parent, "terminal.png", "Terminal")
 
         entry.setFixedWidth(75)
@@ -19,6 +20,7 @@ class Toolbar1(QHBoxLayout):
         self.addWidget(entry)
         self.addWidget(search)
         self.addStretch()
+        self.addWidget(pref)
         self.addWidget(term)
 
 

@@ -1,5 +1,5 @@
 from PySide.QtGui  import *
-from programValues import *
+from globals       import *
 from button        import *
 
 import sys
@@ -9,13 +9,15 @@ class Technicals(QWidget):
 
     def __init__(self, parent=None):
         super(Technicals, self).__init__(parent)
-        self.techLayout = QVBoxLayout(self)
-                
+        self.layout  = QVBoxLayout(self)
+        self.widgets = []
         # don't allow added widgets to expand in size
-        self.techLayout.setSizeConstraint(QLayout.SetMaximumSize)
+        self.layout.setSizeConstraint(QLayout.SetMaximumSize)
 
     def addTechnical(self, technicalName):
-        self.techLayout.addWidget(Technical(self, technicalName))
+        tech = Technical(self, technicalName)
+        self.layout.addWidget(tech)
+        self.widgets.append(tech)
 
 
 class Technical(QGroupBox):

@@ -1,5 +1,5 @@
 from PySide.QtGui  import *
-from programValues import *
+from globals       import *
 
 from toolbar1      import Toolbar1
 from toolbar2      import Toolbar2
@@ -16,17 +16,16 @@ class Control(QWidget):
     def __init__(self, parent=None):
         super(Control, self).__init__(parent)
         layout = QVBoxLayout(self)
-
         layout.addLayout(Toolbar1(self))
 
         self.graph = Graph(self)
         layout.addWidget(self.graph)
-
+        
         layout.addLayout(Toolbar2(self))
 
         self.scrollArea = ScrollArea(self)
         layout.addWidget(self.scrollArea)
-
+        
 
 class ScrollArea(QScrollArea):
     """Where the technicals will show up, appears after ToolBar2"""
