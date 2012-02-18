@@ -1,11 +1,15 @@
 from PySide.QtGui  import *
+from PySide.QtCore import *
 from globals       import *
 from preferences   import Preferences
+from interpreter   import Interpreter
 
 import os
 
 class Button(QLabel):
     """Custom icon buttons"""
+
+    signal = Signal(list)
 
     def __init__(self, parent=None, image=None, id=None, yaya=None):
         super(Button, self).__init__(parent)
@@ -19,8 +23,11 @@ class Button(QLabel):
         self.setPixmap(QPixmap(self.image))
         self.setMouseTracking(True)
 
+
+
     def mousePressEvent(self, event):
 
+        """
         if self.id == "GetSymbolData":
             print self.id, self.parent, self.parent.text()
 
@@ -46,8 +53,11 @@ class Button(QLabel):
         elif self.id == "Preferences":
             print self.id, self.parent
             #Preferences(self.parent)
-            
-
+        """           
+         
+        kwargs = {"id"    : self.id, 
+                  "parent": self.parent}
+        self.signal.emit(kwargs)
             
     def mouseMoveEvent(self, event):
 

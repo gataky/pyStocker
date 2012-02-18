@@ -26,6 +26,7 @@ class Control(QWidget):
         self.scrollArea = ScrollArea(self)
         layout.addWidget(self.scrollArea)
         
+        
 
 class ScrollArea(QScrollArea):
     """Where the technicals will show up, appears after ToolBar2"""
