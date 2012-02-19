@@ -8,6 +8,8 @@ class Toolbar1(QHBoxLayout):
     def __init__(self, parent=None):
         super(Toolbar1, self).__init__(None)
 
+        self.control = parent
+
         symbol = QLabel("Ticker")
         entry  = QLineEdit()
         search = Button(entry, "search.png", "GetSymbolData")
@@ -21,24 +23,23 @@ class Toolbar1(QHBoxLayout):
 
         entry.setFixedWidth(75)
 
-        self.addWidget(symbol)
-        self.addWidget(entry)
-        self.addWidget(search)
-        
+        map(self.addWidget, [symbol, entry, search])
         self.addStretch()
-        
-        self.addWidget(new)
-        self.addWidget(open)
-        self.addWidget(save)
-        
+        map(self.addWidget, [new, open, save])
         self.addStretch()
-        
-        self.addWidget(pref)
-        self.addWidget(term)
+        map(self.addWidget, [pref, term])
+
+        search.signal.connect(self.getSymbolData)
 
         new.signal.connect(self.new)
         save.signal.connect(self.save)
         open.signal.connect(self.open)
+
+        pref.signal.connect(self.preferences)
+        term.signal.connect(self.terminal)
+
+    def getSymbolData(self, kwargs):
+        print kwargs
         
     def new(self, kwargs):
         print kwargs
@@ -49,6 +50,12 @@ class Toolbar1(QHBoxLayout):
     def open(self, kwargs):
         print kwargs
     
+    def preferences(self, kwargs):
+        print kwargs
 
+    def terminal(self, kwargs):
+        print kwargs
+
+        
 if __name__ == "__main__":
     import control
