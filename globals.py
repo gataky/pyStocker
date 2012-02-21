@@ -4,6 +4,9 @@ from PySide.QtGui  import *
 # Percentage of the screen that the Technical view will be allowed to take up.
 MAX_HEIGHT_FACTOR = .5
 
+# Number of attempts allowed to get ticker data
+GET_DATA_ATTEMPTS = 1
+
 # all information relating to TA-lib is defined here
 TECHNICALS = {
 # ---------------------------------------------------------------------------- #

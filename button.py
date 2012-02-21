@@ -26,7 +26,8 @@ class Button(QLabel):
     def mousePressEvent(self, event):
          
         kwargs = {"id"    : self.id, 
-                  "parent": self.parent}
+                  "parent": self.parent,
+                  "pos"   : event.pos()}
         self.signal.emit(kwargs)
         self.holding = True
             

@@ -103,8 +103,6 @@ class TechBar(QHBoxLayout):
         print kwargs
 
     def moveTechnicals(self, parent, id):
-
-        print "foo"
         
         widgets = parent.technicals.widgets
         index   = widgets.index(parent)
@@ -132,4 +130,4 @@ class TechBar(QHBoxLayout):
 
 
 if __name__ == "__main__":
-    import control
+    import pyStocker

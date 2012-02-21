@@ -1,6 +1,11 @@
 from PySide.QtGui import *
-
 from button       import Button
+from globals      import *
+
+import matplotlib.finance as finance
+import matplotlib.mlab    as mlab
+import urllib2
+import datetime
 
 class Toolbar1(QHBoxLayout):
     """Toolbar at the top of the program"""
@@ -39,7 +44,31 @@ class Toolbar1(QHBoxLayout):
         term.signal.connect(self.terminal)
 
     def getSymbolData(self, kwargs):
-        print kwargs
+        start  = datetime.date(2010,1,1)
+        end    = datetime.date.today()
+        ticker = kwargs["parent"].text().upper()
+
+        print "getting symbol data..."
+        for attempt in xrange(GET_DATA_ATTEMPTS):
+            try:
+                # a numpy record array with fields: 
+                #   date, open, high, low, close, volume, adj_close        
+                fh    = finance.fetch_historical_yahoo(ticker, start, end)
+                data  = mlab.csv2rec(fh)
+                fh.close()
+                data.sort()
+                print "\tsuccess"
+                break
+            except urllib2.HTTPError:
+                print "\tAttempt # %i" % (attempt + 1)
+                if attempt == 2:
+                    print "\t404 Error: Check ticker/connection"
+                    return 
+                    
+        
+        self.control.graph.setData(data)
+
+        
         
     def new(self, kwargs):
         print kwargs
@@ -58,4 +87,4 @@ class Toolbar1(QHBoxLayout):
 
         
 if __name__ == "__main__":
-    import control
+    import pyStocker
