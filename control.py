@@ -11,20 +11,16 @@ import sys
 import os
 
 
-
-
-
-
 class Control(QWidget):
     """Main program that handles everything"""
 
     def __init__(self, parent=None):
         super(Control, self).__init__(parent)
-        
+
         layout = QVBoxLayout(self)
-        
-        self.toolbar1   = Toolbar1(self)        
-        
+
+        self.toolbar1   = Toolbar1(self)
+
         self.graph      = Graph(self)
         self.toolbar2   = Toolbar2(self)
         self.scrollArea = ScrollArea(self)
@@ -33,7 +29,7 @@ class Control(QWidget):
         layout.addWidget(self.graph)
         layout.addLayout(self.toolbar2)
         layout.addWidget(self.scrollArea)
-        
+
 
 class ScrollArea(QScrollArea):
     """Where the technicals will show up, appears after ToolBar2"""
@@ -49,7 +45,7 @@ class ScrollArea(QScrollArea):
     def addTechnical(self, technicalName):
         self.techs.addTechnical(technicalName)
 
-            
+
 if __name__ == "__main__":
     import pyStocker
 

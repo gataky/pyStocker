@@ -6,10 +6,10 @@ import sys
 import numpy
 
 os.environ['QT_API'] = 'pyside'
-import matplotlib 
+import matplotlib
 matplotlib.use('Qt4Agg') # must be called before .backends or .pylab
 
-import control
+import control # program main
 
 app  = QApplication(sys.argv)
 main = control.Control()

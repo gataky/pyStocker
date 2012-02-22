@@ -24,17 +24,17 @@ class Button(QLabel):
         self.setMouseTracking(True)
 
     def mousePressEvent(self, event):
-         
-        kwargs = {"id"    : self.id, 
+
+        kwargs = {"id"    : self.id,
                   "parent": self.parent,
                   "pos"   : event.pos()}
         self.signal.emit(kwargs)
         self.holding = True
-            
+
     def mouseMoveEvent(self, event):
-        
+
         if self.holding and self.moveable:
-            kwargs = {"id"    : self.id, 
+            kwargs = {"id"    : self.id,
                       "parent": self.parent,
                       "pos"   : event.pos()}
             self.signal.emit(kwargs)
@@ -43,4 +43,4 @@ class Button(QLabel):
         self.holding = False
 
 if __name__ == "__main__":
-    import control
+    import pyStocker

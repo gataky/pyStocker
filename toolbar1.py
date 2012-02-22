@@ -18,13 +18,14 @@ class Toolbar1(QHBoxLayout):
         symbol = QLabel("Ticker")
         entry  = QLineEdit()
         search = Button(entry, "search.png", "GetSymbolData")
-        
+
         new    = Button(parent, "new.png", "New")
         open   = Button(parent, "open.png", "Open")
         save   = Button(parent, "save.png", "Save")
-        
+
         pref   = Button(parent, "preferences.png", "Preferences")
         term   = Button(parent, "terminal.png", "Terminal")
+        help   = Button(parent, "help.png", "Help")
 
         entry.setFixedWidth(75)
 
@@ -32,7 +33,7 @@ class Toolbar1(QHBoxLayout):
         self.addStretch()
         map(self.addWidget, [new, open, save])
         self.addStretch()
-        map(self.addWidget, [pref, term])
+        map(self.addWidget, [pref, term, help])
 
         search.signal.connect(self.getSymbolData)
 
@@ -42,6 +43,8 @@ class Toolbar1(QHBoxLayout):
 
         pref.signal.connect(self.preferences)
         term.signal.connect(self.terminal)
+        help.signal.connect(self.help)
+
 
     def getSymbolData(self, kwargs):
         start  = datetime.date(2010,1,1)
@@ -51,8 +54,8 @@ class Toolbar1(QHBoxLayout):
         print "getting symbol data..."
         for attempt in xrange(GET_DATA_ATTEMPTS):
             try:
-                # a numpy record array with fields: 
-                #   date, open, high, low, close, volume, adj_close        
+                # a numpy record array with fields:
+                #   date, open, high, low, close, volume, adj_close
                 fh    = finance.fetch_historical_yahoo(ticker, start, end)
                 data  = mlab.csv2rec(fh)
                 fh.close()
@@ -63,28 +66,30 @@ class Toolbar1(QHBoxLayout):
                 print "\tAttempt # %i" % (attempt + 1)
                 if attempt == 2:
                     print "\t404 Error: Check ticker/connection"
-                    return 
-                    
-        
+                    return
+
+
         self.control.graph.setData(data)
 
-        
-        
+
+
     def new(self, kwargs):
         print kwargs
-        
+
     def save(self, kwargs):
         print kwargs
-        
+
     def open(self, kwargs):
         print kwargs
-    
+
     def preferences(self, kwargs):
         print kwargs
 
     def terminal(self, kwargs):
         print kwargs
 
-        
+    def help(self, kwargs):
+        print kwargs
+
 if __name__ == "__main__":
     import pyStocker
