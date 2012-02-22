@@ -2,6 +2,8 @@ if __name__ == "__main__":
     import pyStocker
 
 from PySide.QtGui import *
+from globals      import *
+from button       import Button
 from numpy        import (arange,
                           diff,
                           pi,
@@ -9,9 +11,10 @@ from numpy        import (arange,
                           zeros_like)
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
+from matplotlib.figure                  import Figure
 
 import os
+
 
 class Graph(FigureCanvasQTAgg):
 
@@ -30,41 +33,37 @@ class Graph(FigureCanvasQTAgg):
         self.axPri = figure.add_subplot(111)
         self.axVol = self.axPri.twinx()
 
-        self.axPri.axes.hold(False)
-        self.axVol.axes.hold(False)
-
         figure.canvas.mpl_connect("motion_notify_event", self.motionNotifyEvent)
 
     def setData(self, data):
 
-        fillcolor   = 'darkgoldenrod'
-        self.data   = data
-        self.dates  = data.date
-        self.close  = data.close
-        self.volume = (self.close*data.volume)/1e6  # dollar volume/millions
-        vmax        = self.volume.max()
+        self.axPri.axes.hold(False)
+        self.axVol.axes.hold(False)
 
-        self.axVol.set_ylim(0, 5 * vmax)
-        self.axVol.fill_between(self.dates,
-                                self.volume,
-                                0,
-                                label     = 'Volume',
-                                facecolor = fillcolor,
-                                edgecolor = fillcolor)
-                                
-        self.axPri.plot_date(self.dates, self.close, "-")
-        self.axPri.set_yscale("log")
-        
-        self.axPri.yaxis.grid(color     = "grey", 
-                              linestyle = "dashed", 
+        self.data   = data
+        self.volume = (data.close * data.volume)/1e6  # dollar volume/millions
+
+        self.axVol.set_ylim(0, 5 * data.volume.max())
+        self.axVol.fill_between(data.date,
+                                data.volume,
+                                facecolor = VOLUME_FACE_COLOR,
+                                edgecolor = VOLUME_EDGE_COLOR)
+
+        self.axPri.plot_date(data.date, data.close, "-")
+        self.axPri.set_yscale(Y_AXIS_SCALE)
+
+
+        self.axPri.yaxis.grid(color     = Y_AXIS_GRID_COLOR,
+                              linestyle = "dashed",
                               which     = "both")
-        
-        self.axPri.xaxis.grid(color     = "grey",
+
+        self.axPri.xaxis.grid(color     = X_AXIS_GRID_COLOR,
                               linestyle = "dashed",
                               which     = "major")
-                              
+
         self.axPri.set_axisbelow(True)
         self.dataSize = data.size
+
         self.draw()
 
     def motionNotifyEvent(self, event):

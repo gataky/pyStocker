@@ -1,13 +1,45 @@
 from PySide.QtGui  import *
 
+# -------------------- #
+# -- Start settings -- #
+# -------------------- #
 
-# Percentage of the screen that the Technical view will be allowed to take up.
+# Percentage of the screen that the technical view will be allowed to take up.
+# .4
 MAX_HEIGHT_FACTOR = .5
 
-# Number of attempts allowed to get ticker data
+# Number of attempts allowed to get ticker data {1 ... n | n <> 0}
+# 2
 GET_DATA_ATTEMPTS = 1
 
-# all information relating to TA-lib is defined here
+# Color of the x-axis grid lines
+# "grey"
+X_AXIS_GRID_COLOR = "grey"
+
+# Color of the y-axis grid lines
+# "grey"
+Y_AXIS_GRID_COLOR = "grey"
+
+# Color of the volume face
+# "darkgoldenrod"
+VOLUME_FACE_COLOR = "darkgoldenrod"
+
+# Color of the volume edge
+# "blue"
+VOLUME_EDGE_COLOR = "blue"
+
+# Scale of the y-axis log/linear
+# "log"
+Y_AXIS_SCALE = "log"
+
+# ------------------- #
+# -- Stop settings -- #
+# ------------------- #
+
+# ---------------------- #
+# -- Start technicals -- #
+# ---------------------- #
+
 TECHNICALS = {
 # ---------------------------------------------------------------------------- #
 "Tech Name" :                                                                   # Name of the Tech
@@ -30,6 +62,7 @@ TECHNICALS = {
                 },
 },
 # ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
 "Another Tech":
 {
     "abbr"  : "AT",
@@ -51,6 +84,7 @@ TECHNICALS = {
                 },
 },
 # ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
 "3":
 {
     "abbr"  : "3",
@@ -71,4 +105,9 @@ TECHNICALS = {
                                                 QSizePolicy.Fixed)],]
                 },
 },
+# ---------------------------------------------------------------------------- #
 }
+
+# --------------------- #
+# -- Stop technicals -- #
+# --------------------- #

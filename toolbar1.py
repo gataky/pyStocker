@@ -1,6 +1,7 @@
-from PySide.QtGui import *
-from button       import Button
-from globals      import *
+from PySide.QtGui  import *
+from PySide.QtCore import *
+from button        import Button
+from globals       import *
 
 import matplotlib.finance as finance
 import matplotlib.mlab    as mlab
@@ -16,13 +17,15 @@ class Toolbar1(QHBoxLayout):
         self.control = parent
 
         symbol = QLabel("Ticker")
-        entry  = QLineEdit()
-        search = Button(entry, "search.png", "GetSymbolData")
+        entry  = CLineEdit(self)
 
+        # -------------------------------------------------------------------- # Buttons
+        search = Button(entry, "search.png", "GetSymbolData")
+        # ---- #
         new    = Button(parent, "new.png", "New")
         open   = Button(parent, "open.png", "Open")
         save   = Button(parent, "save.png", "Save")
-
+        # ---- #
         pref   = Button(parent, "preferences.png", "Preferences")
         term   = Button(parent, "terminal.png", "Terminal")
         help   = Button(parent, "help.png", "Help")
@@ -35,6 +38,7 @@ class Toolbar1(QHBoxLayout):
         self.addStretch()
         map(self.addWidget, [pref, term, help])
 
+        # -------------------------------------------------------------------- # Connections
         search.signal.connect(self.getSymbolData)
 
         new.signal.connect(self.new)
@@ -46,12 +50,12 @@ class Toolbar1(QHBoxLayout):
         help.signal.connect(self.help)
 
 
-    def getSymbolData(self, kwargs):
+    def getSymbolData(self, lineEdit):
         start  = datetime.date(2010,1,1)
         end    = datetime.date.today()
-        ticker = kwargs["parent"].text().upper()
+        ticker = lineEdit.text().upper()
 
-        print "getting symbol data..."
+        print "getting symbol data (%s)..." % ticker
         for attempt in xrange(GET_DATA_ATTEMPTS):
             try:
                 # a numpy record array with fields:
@@ -68,10 +72,7 @@ class Toolbar1(QHBoxLayout):
                     print "\t404 Error: Check ticker/connection"
                     return
 
-
         self.control.graph.setData(data)
-
-
 
     def new(self, kwargs):
         print kwargs
@@ -90,6 +91,22 @@ class Toolbar1(QHBoxLayout):
 
     def help(self, kwargs):
         print kwargs
+
+
+class CLineEdit(QLineEdit):
+
+    def __init__(self, parent=None):
+
+        super(CLineEdit, self).__init__(None)
+        self.parent = parent
+
+    def keyPressEvent(self, event):
+
+        if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
+            self.parent.getSymbolData(self)
+        super(CLineEdit, self).keyPressEvent(event)
+
+
 
 if __name__ == "__main__":
     import pyStocker

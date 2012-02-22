@@ -3,7 +3,7 @@ from globals       import *
 
 from toolbar1      import Toolbar1
 from toolbar2      import Toolbar2
-from graph         import Graph
+from graph         import *
 from button        import Button
 from technicals    import *
 
@@ -20,7 +20,6 @@ class Control(QWidget):
         layout = QVBoxLayout(self)
 
         self.toolbar1   = Toolbar1(self)
-
         self.graph      = Graph(self)
         self.toolbar2   = Toolbar2(self)
         self.scrollArea = ScrollArea(self)

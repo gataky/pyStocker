@@ -14,14 +14,16 @@ class Button(QLabel):
     def __init__(self, parent=None, image=None, id=None, moveable=False):
         super(Button, self).__init__(parent)
 
-        self.image    = os.path.join("imgs", image)
+        self.image = os.path.join("imgs", image)
+        self.setPixmap(QPixmap(self.image))
+
         self.parent   = parent
         self.id       = id
         self.holding  = False # is the button being held?
         self.moveable = moveable
 
-        self.setPixmap(QPixmap(self.image))
-        self.setMouseTracking(True)
+        if moveable:
+            self.setMouseTracking(True)
 
     def mousePressEvent(self, event):
 
