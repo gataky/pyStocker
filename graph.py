@@ -48,17 +48,23 @@ class Graph(FigureCanvasQTAgg):
         self.axVol.fill_between(self.dates,
                                 self.volume,
                                 0,
-                                label='Volume',
-                                facecolor=fillcolor,
-                                edgecolor=fillcolor)
-
+                                label     = 'Volume',
+                                facecolor = fillcolor,
+                                edgecolor = fillcolor)
+                                
         self.axPri.plot_date(self.dates, self.close, "-")
         self.axPri.set_yscale("log")
-
+        
+        self.axPri.yaxis.grid(color     = "grey", 
+                              linestyle = "dashed", 
+                              which     = "both")
+        
+        self.axPri.xaxis.grid(color     = "grey",
+                              linestyle = "dashed",
+                              which     = "major")
+                              
+        self.axPri.set_axisbelow(True)
         self.dataSize = data.size
-        print data[0]
-        print data[-1]
-
         self.draw()
 
     def motionNotifyEvent(self, event):
