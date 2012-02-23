@@ -37,7 +37,10 @@ class Graph(FigureCanvasQTAgg):
 
     def setSpan(self, low, high):
         print low, high
-        section = self.data[low:high+1]
+        try:
+            section = self.data[low:high+1]
+        except AttributeError:
+            return
         self.setDataToGraph(section)
 
     def setData(self, data):
