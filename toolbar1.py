@@ -18,41 +18,34 @@ class Toolbar1(QHBoxLayout):
 
         symbol = QLabel("Ticker")
         entry  = CLineEdit(self)
+        entry.setFixedWidth(75)
 
-        # -------------------------------------------------------------------- # Buttons
-        search = Button(entry, "search.png", "GetSymbolData")
-        # ---- #
+        #search = Button(entry, "search.png", "GetSymbolData")
         new    = Button(parent, "new.png", "New")
         open   = Button(parent, "open.png", "Open")
         save   = Button(parent, "save.png", "Save")
-        # ---- #
         pref   = Button(parent, "preferences.png", "Preferences")
         term   = Button(parent, "terminal.png", "Terminal")
         help   = Button(parent, "help.png", "Help")
 
-        entry.setFixedWidth(75)
-
-        map(self.addWidget, [symbol, entry, search])
+        map(self.addWidget, [symbol, entry])
         self.addStretch()
         map(self.addWidget, [new, open, save])
         self.addStretch()
         map(self.addWidget, [pref, term, help])
 
-        # -------------------------------------------------------------------- # Connections
-        search.signal.connect(self.getSymbolData)
-
+        #search.signal.connect(self.getSymbolData)
         new.signal.connect(self.new)
         save.signal.connect(self.save)
         open.signal.connect(self.open)
-
         pref.signal.connect(self.preferences)
         term.signal.connect(self.terminal)
         help.signal.connect(self.help)
 
-
     def getSymbolData(self, lineEdit):
-        start  = datetime.date(2010,1,1)
-        end    = datetime.date.today()
+        end    = datetime.datetime.today()
+        start  = end - datetime.timedelta(weeks=YEARS_OF_DATA * 52.177457)
+
         ticker = lineEdit.text().upper()
 
         print "getting symbol data (%s)..." % ticker
@@ -72,7 +65,26 @@ class Toolbar1(QHBoxLayout):
                     print "\t404 Error: Check ticker/connection"
                     return
 
+
+
+
+        #factor = int(DEFAULT_ZOOM[0])
+        #if DEFAULT_ZOOM in ["1d", "5d"]:
+            #startZoom = end - datetime.timedelta(days=factor)
+            #zoomIndex = data.size - factor
+#
+        #elif DEFAULT_ZOOM in ["1m", "3m", "6m"]:
+            #startZoom = end - datetime.timedelta(days=factor*365/12)
+            #print data.date.index(startZoom)
+            #zoomIndex = 1
+
+        self.control.sliders.setMinimum(0)
+        self.control.sliders.setMaximum(data.size)
+        self.control.sliders.setLow(0)
+        self.control.sliders.setHigh(data.size)
+
         self.control.graph.setData(data)
+        self.control.graph.setDataToGraph(data)
 
     def new(self, kwargs):
         print kwargs

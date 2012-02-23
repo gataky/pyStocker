@@ -31,27 +31,32 @@ class Graph(FigureCanvasQTAgg):
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.axPri = figure.add_subplot(111)
-        self.axVol = self.axPri.twinx()
+        #self.axVol = self.axPri.twinx()
 
         figure.canvas.mpl_connect("motion_notify_event", self.motionNotifyEvent)
 
+    def setSpan(self, low, high):
+        print low, high
+        section = self.data[low:high+1]
+        self.setDataToGraph(section)
+
     def setData(self, data):
+        self.data = data
+
+    def setDataToGraph(self, data):
 
         self.axPri.axes.hold(False)
-        self.axVol.axes.hold(False)
 
-        self.data   = data
-        self.volume = (data.close * data.volume)/1e6  # dollar volume/millions
-
-        self.axVol.set_ylim(0, 5 * data.volume.max())
-        self.axVol.fill_between(data.date,
-                                data.volume,
-                                facecolor = VOLUME_FACE_COLOR,
-                                edgecolor = VOLUME_EDGE_COLOR)
+        #self.axVol.axes.hold(False)
+        #self.volume = (data.close * data.volume)/1e6  # dollar volume/millions
+        #self.axVol.set_ylim(0, 5 * data.volume.max())
+        #self.axVol.fill_between(data.date,
+                                #data.volume,
+                                #facecolor = VOLUME_FACE_COLOR,
+                                #edgecolor = VOLUME_EDGE_COLOR)
 
         self.axPri.plot_date(data.date, data.close, "-")
         self.axPri.set_yscale(Y_AXIS_SCALE)
-
 
         self.axPri.yaxis.grid(color     = Y_AXIS_GRID_COLOR,
                               linestyle = "dashed",
@@ -63,7 +68,6 @@ class Graph(FigureCanvasQTAgg):
 
         self.axPri.set_axisbelow(True)
         self.dataSize = data.size
-
         self.draw()
 
     def motionNotifyEvent(self, event):
