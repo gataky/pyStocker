@@ -1,3 +1,6 @@
+if __name__ == "__main__":
+    import pyStocker
+
 
 from PySide.QtGui  import *
 from PySide.QtCore import *
@@ -45,5 +48,4 @@ class Button(QLabel):
     def mouseReleaseEvent(self, event):
         self.holding = False
 
-if __name__ == "__main__":
-    import pyStocker
+

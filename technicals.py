@@ -49,21 +49,12 @@ class TechBar(QHBoxLayout):
         self.technical = parent
         self.setParameters(parameters)
 
-        btns = ["bottom.png",
-                "down.png",
-                "up.png",
-                "top.png",
-                "stop.png"]
-
-        bottom = Button(parent, btns[0], btns[0].split(".")[0].capitalize())
-        down   = Button(parent, btns[1], btns[1].split(".")[0].capitalize())
-        up     = Button(parent, btns[2], btns[2].split(".")[0].capitalize())
-        top    = Button(parent, btns[3], btns[3].split(".")[0].capitalize())
-        stop   = Button(parent, btns[4], btns[4].split(".")[0].capitalize())
-
-        map(self.addWidget, [bottom, down, up, top, stop])
-        buttonList = [bottom, down, up, top, stop]
-        map(lambda x: x.signal.connect(self.handle), buttonList)
+        for b in ["bottom", "down", "up", "top", "stop"]:
+            i = b + ".png"
+            B = Button(parent, i, b.capitalize())
+            self.addWidget(B)
+            B.signal.connect(self.handle)
+            
 
     def setParameters(self, params):
 

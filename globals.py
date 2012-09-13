@@ -30,7 +30,7 @@ VOLUME_EDGE_COLOR       = "blue"
 
 # Scale of the y-axis log/linear
 # "log"
-Y_AXIS_SCALE            = "log"
+Y_AXIS_SCALE            = "linear"
 
 # Gather this much time of data in years
 # 2
