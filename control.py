@@ -1,12 +1,8 @@
 from PySide.QtGui  import *
+from PySide.QtCore import *
 from globals       import *
 
-from toolbar1      import Toolbar1
-from toolbar2      import Toolbar2
-from graph         import *
-from button        import Button
-from technicals    import *
-from sliders       import RangeSlider
+from utils import Button, Graph, RangeSlider, Technicals, Toolbar1, Toolbar2
 
 import sys
 import os
