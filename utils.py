@@ -441,7 +441,7 @@ class Toolbar1(QHBoxLayout):
         self.control = parent
 
         symbol = QLabel("Ticker")
-        entry  = CLineEdit(self)
+        entry  = TickerEntry(self)
         entry.setFixedWidth(75)
 
         search = Button(entry, "search.png", "GetSymbolData")
@@ -571,15 +571,15 @@ class Toolbar2(QHBoxLayout):
             parent.scrollArea.setFixedHeight(height)
 
 
-class CLineEdit(QLineEdit):
+class TickerEntry(QLineEdit):
 
     def __init__(self, parent=None):
 
-        super(CLineEdit, self).__init__(None)
+        super(TickerEntry, self).__init__(None)
         self.parent = parent
 
     def keyPressEvent(self, event):
 
         if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
             self.parent.getSymbolData(self)
-        super(CLineEdit, self).keyPressEvent(event)
+        super(TickerEntry, self).keyPressEvent(event)
