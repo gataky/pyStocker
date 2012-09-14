@@ -1,0 +1,12 @@
+pyStocker
+
+    A stock screening program that will include back testing.
+
+Dependancies
+
+    PySide
+    numpy
+    matplotlib
+    cython
+    talib (http://mrjbq7.github.com/ta-lib/)
+
