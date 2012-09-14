@@ -3,6 +3,8 @@
 if __name__ == "__main__":
     import pyStocker
 
+import pdb
+
 from PySide.QtGui  import *
 from PySide.QtCore import *
 from globals       import *
@@ -442,21 +444,21 @@ class Toolbar1(QHBoxLayout):
         entry  = CLineEdit(self)
         entry.setFixedWidth(75)
 
-        #search = Button(entry, "search.png", "GetSymbolData")
-        new    = Button(parent, "new.png", "New")
-        open   = Button(parent, "open.png", "Open")
-        save   = Button(parent, "save.png", "Save")
-        pref   = Button(parent, "preferences.png", "Preferences")
-        term   = Button(parent, "terminal.png", "Terminal")
-        help   = Button(parent, "help.png", "Help")
+        search = Button(entry, "search.png", "GetSymbolData")
+        new  = Button(parent, "new.png", "New")
+        open = Button(parent, "open.png", "Open")
+        save = Button(parent, "save.png", "Save")
+        pref = Button(parent, "preferences.png", "Preferences")
+        term = Button(parent, "terminal.png", "Terminal")
+        help = Button(parent, "help.png", "Help")
 
-        map(self.addWidget, [symbol, entry])
+        map(self.addWidget, [symbol, entry, search])
         self.addStretch()
         map(self.addWidget, [new, open, save])
         self.addStretch()
         map(self.addWidget, [pref, term, help])
 
-        #search.clicked.connect(self.getSymbolData)
+        search.clicked.connect(self.getSymbolData)
         new.clicked.connect(self.new)
         save.clicked.connect(self.save)
         open.clicked.connect(self.open)
@@ -464,38 +466,40 @@ class Toolbar1(QHBoxLayout):
         term.clicked.connect(self.terminal)
         help.clicked.connect(self.help)
 
-    def getSymbolData(self, lineEdit):
+    def getSymbolData(self, event):
+
+        # event can either be a dict of an QObject depending on wheather the
+        # user clicked the search button or pressed enter.
+        if isinstance(event, QObject):
+            lineEdit = event
+        elif isinstance(event, dict):
+            lineEdit = event["parent"]
+
         end    = datetime.datetime.today()
         start  = end - datetime.timedelta(weeks=YEARS_OF_DATA * 52.177457)
 
         ticker = lineEdit.text().upper()
 
-        print "getting symbol data (%s)..." % ticker
         for attempt in xrange(GET_DATA_ATTEMPTS):
             try:
                 # a numpy record array with fields:
-                #   date, open, high, low, close, volume, adj_close
-                fh    = finance.fetch_historical_yahoo(ticker, start, end)
-                data  = mlab.csv2rec(fh)
-                fh.close()
+                # date, open, high, low, close, volume, adj_close
+                with finance.fetch_historical_yahoo(ticker, start, end) as fh:
+                    data  = mlab.csv2rec(fh)
                 data.sort()
-                print "\tsuccess"
                 break
             except urllib2.HTTPError:
-                print "\tAttempt # %i" % (attempt + 1)
                 if attempt == 2:
-                    print "\t404 Error: Check ticker/connection"
                     return
 
-        #factor = int(DEFAULT_ZOOM[0])
-        #if DEFAULT_ZOOM in ["1d", "5d"]:
-            #startZoom = end - datetime.timedelta(days=factor)
-            #zoomIndex = data.size - factor
-#
-        #elif DEFAULT_ZOOM in ["1m", "3m", "6m"]:
-            #startZoom = end - datetime.timedelta(days=factor*365/12)
-            #print data.date.index(startZoom)
-            #zoomIndex = 1
+        factor = int(DEFAULT_ZOOM[0])
+        if DEFAULT_ZOOM in ["1d", "5d"]:
+            startZoom = end - datetime.timedelta(days=factor)
+            zoomIndex = data.size - factor
+
+        elif DEFAULT_ZOOM in ["1m", "3m", "6m"]:
+            startZoom = end - datetime.timedelta(days=factor*365/12)
+            zoomIndex = 1
 
         self.control.sliders.setMinimum(0)
         self.control.sliders.setMaximum(data.size)

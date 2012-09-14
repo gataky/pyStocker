@@ -30,7 +30,7 @@ VOLUME_EDGE_COLOR       = "blue"
 
 # Scale of the y-axis log/linear
 # "log"
-Y_AXIS_SCALE            = "log"
+Y_AXIS_SCALE            = "linear"
 
 # Gather this much time of data in years
 # 2
@@ -38,7 +38,7 @@ YEARS_OF_DATA           = 2
 
 # Defult zoom when display is initialized. 1d, 5d, 1m, 3m, 6m, YTD, All
 # "6m"
-DEFAULT_ZOOM            = "6m"
+DEFAULT_ZOOM            = "1m"
 
 # -- Stop settings -- #
 

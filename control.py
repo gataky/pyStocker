@@ -1,3 +1,6 @@
+if __name__ == "__main__":
+    import pyStocker
+
 from PySide.QtGui  import *
 from PySide.QtCore import *
 from globals       import *
@@ -31,8 +34,6 @@ class Control(QWidget):
         self.sliders.sliderMoved.connect(self.graph.setSpan)
 
 
-
-
 class ScrollArea(QScrollArea):
     """Where the technicals will show up, appears after ToolBar2"""
 
@@ -46,8 +47,3 @@ class ScrollArea(QScrollArea):
 
     def addTechnical(self, technicalName):
         self.techs.addTechnical(technicalName)
-
-
-if __name__ == "__main__":
-    import pyStocker
-
