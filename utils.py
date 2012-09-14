@@ -8,6 +8,7 @@ import pdb
 from PySide.QtGui  import *
 from PySide.QtCore import *
 from globals       import *
+
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.figure                  import Figure
 
