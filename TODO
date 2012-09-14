@@ -1,0 +1,10 @@
+* Remove sliders and replace with labels for spans
+
+* Get some simple technicals working with Ta-Lib
+
+* Comment code
+
+* Hunt down seg fault on windows
+
+* add interpreter
+
