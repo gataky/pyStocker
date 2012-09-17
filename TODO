@@ -1,17 +1,29 @@
-* Remove sliders and replace with labels for spans
++---------------+
+| L -> Low pri	|
+| M -> Med pri	|
+| H -> High pri	|
+| x -> closed	|
++---------------+
 
-* Get some simple technicals working with Ta-Lib
+L Remove sliders and replace with labels for spans
 
-* Comment code
+H Get some simple technicals working with Ta-Lib
 
-* Hunt down seg fault on windows
+M Comment code
 
-* add interpreter
+L Hunt down seg fault on windows
 
-* make trender
+M add interpreter
+
+x make trender
 	trender gives the trend of the stock over history with a given
 	reversal value.
 
 	If the reversal is 1 and the stock is trending down with a 
 	day-to-day change of >1 then the stock will be seen as having
-	reversed trend.
+	reversed trend. 
+
+	This is the start of back testing.
+
+H wrap Ta-Lib methods into python
+	the start of back testing.
