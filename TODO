@@ -8,3 +8,10 @@
 
 * add interpreter
 
+* make trender
+	trender gives the trend of the stock over history with a given
+	reversal value.
+
+	If the reversal is 1 and the stock is trending down with a 
+	day-to-day change of >1 then the stock will be seen as having
+	reversed trend.
