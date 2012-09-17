@@ -30,7 +30,6 @@ import control # program main
 
 app  = QApplication(sys.argv)
 app.setStyle("plastique")
-#app.setStyle("cleanlooks")
 main = control.Control()
 main.resize(600, 400)
 main.show()

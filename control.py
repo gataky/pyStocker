@@ -35,6 +35,8 @@ class Control(QWidget):
 
         layout = QVBoxLayout(self)
 
+        self.exit = False
+
         self.toolbar1   = Toolbar1(self)
         self.graph      = Graph(self)
         self.sliders    = RangeSlider(Qt.Horizontal, self)
@@ -48,6 +50,14 @@ class Control(QWidget):
         layout.addWidget(self.scrollArea)
 
         self.sliders.sliderMoved.connect(self.graph.setSpan)
+
+    def keyPressEvent(self, event):
+        
+        if event.key() == Qt.Key_Escape:
+            if self.exit:
+                sys.exit()
+            else:
+                self.exit = True
 
 
 class ScrollArea(QScrollArea):
