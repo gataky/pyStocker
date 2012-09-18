@@ -4,12 +4,20 @@ import sys
 import code
 import PySide
 
-from PySide.QtGui  import *
-from PySide.QtCore import *
+try:
+    from PySide.QtGui  import *
+    from PySide.QtCore import *
+except ImportError:
+    try:
+        from PyQt4.QtGui  import *
+        from PyQt4.QtCore import *
+    except ImportError:
+        print "ImportError: You don't have PySide or PyQt4"
+        sys.exit()
 
 class Interpreter(QDialog):
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
 
         super(Interpreter, self).__init__(parent)
         hBox = QHBoxLayout()
@@ -18,7 +26,7 @@ class Interpreter(QDialog):
         self.textEdit = PyInterp(self)
 
         # this is how you pass in locals to the interpreter
-        self.textEdit.initInterpreter() 
+        self.textEdit.initInterpreter()
 
         self.resize(650, 300)
         self.centerOnScreen()
@@ -42,10 +50,6 @@ class PyInterp(QTextEdit):
         def __init__(self, locals):
             code.InteractiveInterpreter.__init__(self, locals)
 
-        def runIt(self, command):
-            code.InteractiveInterpreter.runsource(self, command)
-
-
     def __init__(self,  parent):
         super(PyInterp,  self).__init__(parent)
 
@@ -55,9 +59,9 @@ class PyInterp(QTextEdit):
         self.refreshMarker      = False # to change back to >>> from ...
         self.multiLine          = False # code spans more than one line
         self.command            = ''    # command to be ran
-        
+
         self.printBanner()              # print sys info
-        self.marker()                   # make the >>> or ... marker        
+        self.marker()                   # make the >>> or ... marker
         self.history            = []    # list of commands entered
         self.historyIndex       = -1
         self.interpreterLocals  = {}
@@ -79,7 +83,7 @@ class PyInterp(QTextEdit):
         self.write('PySide ' + PySide.__version__ + '\n')
         msg = 'Type !hist for a history view and !hist(n) history index recall'
         self.write(msg + '\n')
-        
+
 
     def marker(self):
         if self.multiLine:
@@ -125,7 +129,7 @@ class PyInterp(QTextEdit):
         return True
 
     def customCommands(self, command):
-        
+
         if command == '!hist': # display history
             self.append('') # move down one line
             # vars that are in the command are prefixed with ____CC and deleted
@@ -234,14 +238,14 @@ class PyInterp(QTextEdit):
                 if self.haveLine and not self.multiLine: # one line command
                     self.command = line # line is the command
                     self.append('') # move down one line
-                    self.interpreter.runIt(self.command)
+                    self.interpreter.runcode(self.command)
                     self.command = '' # clear command
                     self.marker() # handle marker style
                     return None
 
                 if self.multiLine and not self.haveLine: #  multi line done
                     self.append('') # move down one line
-                    self.interpreter.runIt(self.command)
+                    self.interpreter.runcode(self.command)
                     self.command = '' # clear command
                     self.multiLine = False # back to single line
                     self.marker() # handle marker style
@@ -252,9 +256,13 @@ class PyInterp(QTextEdit):
                     self.marker()
                     return None
                 return None
-                
+
         # allow all other key events
         super(PyInterp, self).keyPressEvent(event)
 
 if __name__ == '__main__':
-    import control
+    #~ import control
+    a = QApplication([])
+    i = Interpreter()
+    i.show()
+    sys.exit(a.exec_())
