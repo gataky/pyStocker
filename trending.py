@@ -1,45 +1,72 @@
 
-def trender(data, reversal):
+class Trending(object):
 
-    def initialize(point, previous):
-        delta = point - previous
-        if delta >= 0:
-            return True
+    def __init__(self, data, reversal, data_is_reverse=False):
+
+        data = map(float, data)
+        if data_is_reverse:
+            self._data = data[::-1]
         else:
-            return False
+            self._data = data
 
-    data  = map(lambda x: float(x), data)
+        self._reversal = reversal
 
-    peak  = min(data)
-    dip   = max(data)
-    trend = []
-    for i, point in enumerate(data[1:]):
+        self._max = min(data)
+        self._min = max(data)
 
-        if i == 0:
-            trending = initialize(point, data[i])
-            trend.extend((trending, trending))
-            continue
+        self._trend = []
 
-        delta = point - data[i]
 
-        if trending and delta > 0:
-            if point > peak:
-                peak = point
+    def _initialize_trend(self):
 
-        elif trending and delta < 0:
-            if abs(peak - point) >= reversal:
-                trending = not trending
-                dip = point
+        delta = self._data[1] - self._data[0]
+        if delta >= 0:
+            return True, [True, True]
+        else:
+            return False, [False, False]
 
-        elif not trending and delta > 0:
-            if abs(dip - point) >= reversal:
-                trending = not trending
-                peak = point
 
-        elif not trending and delta < 0:
-            if point < dip:
-                dip = point
+    def setData(self, data):
+        self._data = data
 
-        trend.append(trending)
 
-    return trend
+    def setReversal(self, value):
+        self._reversal = float(value)
+
+
+    def getReversal(self):
+        return self._reversal
+
+
+    def getTrend(self):
+        for i, point in enumerate(self._data[1:]):
+
+            if i == 0:
+                trend, self._trend = self._initialize_trend()
+                previous = point
+                continue
+
+            delta = point - previous
+
+            if trend and delta > 0:
+                if point > self._max:
+                    self._max = point
+
+            elif trend and delta < 0:
+                if abs(self._max - point) >= self._reversal:
+                    trend = not trend
+                    self._min = point
+
+            elif not trend and delta > 0:
+                if abs(self._min - point) >= self._reversal:
+                    trend = not trend
+                    self._max = point
+
+            elif not trend and delta < 0:
+                if point < self._min:
+                    self._min = point
+
+            self._trend.append(trend)
+            previous = point
+
+        return self._trend
