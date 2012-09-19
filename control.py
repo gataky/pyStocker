@@ -52,7 +52,7 @@ class Control(QWidget):
         self.sliders.sliderMoved.connect(self.graph.setSpan)
 
     def keyPressEvent(self, event):
-        
+
         if event.key() == Qt.Key_Escape:
             if self.exit:
                 sys.exit()
