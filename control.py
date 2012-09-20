@@ -51,6 +51,11 @@ class Control(QWidget):
 
         self.sliders.sliderMoved.connect(self.graph.setSpan)
 
+        QShortcut(QKeySequence("Ctrl+I"), self, self.test)
+
+    def test(self):
+        print "test"
+
     def keyPressEvent(self, event):
 
         if event.key() == Qt.Key_Escape:
@@ -59,6 +64,7 @@ class Control(QWidget):
             else:
                 self.exit = True
 
+        
 
 class ScrollArea(QScrollArea):
     """Where the technicals will show up, appears after ToolBar2"""
