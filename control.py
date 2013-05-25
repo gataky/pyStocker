@@ -21,7 +21,7 @@ from PySide.QtGui  import *
 from PySide.QtCore import *
 from globals       import *
 
-from utils import Button, Graph, RangeSlider, Technicals, Toolbar1, Toolbar2
+from utils import Button, Graph, RangeSlider, Technicals, Toolbar1, Toolbar2, QIPythonWidget
 
 import sys
 import os
@@ -33,28 +33,38 @@ class Control(QWidget):
     def __init__(self, parent=None):
         super(Control, self).__init__(parent)
 
-        layout = QVBoxLayout(self)
+        self.exit            = False
+        self.terminalVisible = False
 
-        self.exit = False
+        layout1 = QHBoxLayout(self)  # Top master layout
+        layout2 = QVBoxLayout(self)  # widget on the left
+        layout3 = QVBoxLayout(self)  # terminal on the right
 
         self.toolbar1   = Toolbar1(self)
         self.graph      = Graph(self)
         self.sliders    = RangeSlider(Qt.Horizontal, self)
         self.toolbar2   = Toolbar2(self)
         self.scrollArea = ScrollArea(self)
+        self.terminal   = QIPythonWidget(parent=self, namespace={"Control":self})
+        self.terminal.hide()
 
-        layout.addLayout(self.toolbar1)
-        layout.addWidget(self.graph)
-        layout.addWidget(self.sliders)
-        layout.addLayout(self.toolbar2)
-        layout.addWidget(self.scrollArea)
+        layout2.addLayout(self.toolbar1)
+        layout2.addWidget(self.graph)
+        layout2.addWidget(self.sliders)
+        layout2.addLayout(self.toolbar2)
+        layout2.addWidget(self.scrollArea)
+
+        layout3.addWidget(self.terminal)
+
+        layout1.addLayout(layout2)
+        layout1.addLayout(layout3)
 
         self.sliders.sliderMoved.connect(self.graph.setSpan)
 
-        QShortcut(QKeySequence("Ctrl+I"), self, self.test)
+        QShortcut(QKeySequence("Ctrl+I"), self, self.showTerminal)
 
-    def test(self):
-        print "test"
+    def showTerminal(self):
+        self.toolbar1.terminal(None)
 
     def keyPressEvent(self, event):
 
@@ -64,7 +74,6 @@ class Control(QWidget):
             else:
                 self.exit = True
 
-        
 
 class ScrollArea(QScrollArea):
     """Where the technicals will show up, appears after ToolBar2"""
