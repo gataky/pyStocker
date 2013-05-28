@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
 #       the Free Software Foundation; either version 2 of the License, or
@@ -13,6 +15,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 #
+
 
 if __name__ == "__main__":
     import pyStocker
@@ -46,9 +49,22 @@ palette = QToolTip.palette()
 palette.setColor(QPalette.ToolTipText, QColor("black"))
 QToolTip.setPalette(palette)
 
-search_tooltip   = "<p><b>Search</b>: Search for the ticket entered.</p>"
-terminal_tooltip = "<p><b>Terminal</b>: Show the python terminal.</p>"
-help_tooltip     = "<p><b>Help</b>: Help decuments.</p>"
+tooltips = {
+    "search"   : "<p><b>Search</b>: Search for the ticket entered.</p>",
+    "terminal" : "<p><b>Terminal</b>: Show the python terminal.</p>",
+    "help"     : "<p><b>Help</b>: Help decuments.</p>",
+    "new"      : "<p><b>New</b>: Create a new back-test.</p>",
+    "save"     : "<p><b>Save</b>: Save the current back-test.</p>",
+    "pref"     : "<p><b>Preferences</b>: Customize PyStocker.</p>",
+    "open"     : "<p><b>Open</b>: Open a previous back-test.</p>",
+
+    #~ Techincal button tooltips
+    "bottom" : "<p><b>Bottom</b>: Move to the bottom of the technical stack.</p>",
+    "down"   : "<p><b>Down</b>: Move down one in the stack.</p>",
+    "up"     : "<p><b>Up</b>: Move up one in the stack.</p>",
+    "top"    : "<p><b>Top</b>: Move to the top of the technical the stack.</p>",
+    "stop"   : "<p><b>Stop</b>: Remove the technical from the stack.</p>",
+    }
 
 class Button(QLabel):
     """---- ---- ---- ---- Custom Icon Button
@@ -84,6 +100,8 @@ class Button(QLabel):
         kwargs = {"id"    : self.id,
                   "parent": self.parent,
                   "pos"   : event.pos()}
+        #~ Connected:
+        #~ Emits to :
         self.clicked.emit(kwargs)
         self.holding = True
 
@@ -93,6 +111,8 @@ class Button(QLabel):
             kwargs = {"id"    : self.id,
                       "parent": self.parent,
                       "pos"   : event.pos()}
+            #~ Connected:
+            #~ Emits to :
             self.clicked.emit(kwargs)
 
     def mouseReleaseEvent(self, event):
@@ -115,13 +135,13 @@ class Graph(FigureCanvasQTAgg):
                                wspace = 0.0,
                                hspace = 0.0)
         super(Graph, self).__init__(figure)
-
+        self.control = parent
         # Fill the area with the graph
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.axPri = figure.add_subplot(111)
         #self.axVol = self.axPri.twinx()
 
-        figure.canvas.mpl_connect("motion_notify_event", self.motionNotifyEvent)
+        #~ figure.canvas.mpl_connect("motion_notify_event", self.motionNotifyEvent)
 
     def setSpan(self, low, high):
         print low, high
@@ -129,6 +149,7 @@ class Graph(FigureCanvasQTAgg):
             section = self.data[low:high+1]
         except AttributeError:
             return
+        self.control.dateRange.setDates(section[0][0], section[-1][0])
         self.setDataToGraph(section)
 
     def setData(self, data):
@@ -153,13 +174,35 @@ class Graph(FigureCanvasQTAgg):
         self.draw()
 
     def motionNotifyEvent(self, event):
-
         try:
             factor = float(self.dataSize)/(self.geometry().width()-1)
             print self.data[int(round(event.x * factor, 0))]
         except(AttributeError, IndexError):
             pass
 
+
+class DateRange(QHBoxLayout):
+
+    def __init__(self, parent=None):
+        super(DateRange, self).__init__()
+
+        self.control = parent
+        self.start   = QLabel("Start:")
+        self.span    = QLabel("Span:")
+        self.stop    = QLabel("Stop:")
+
+        self.addWidget(self.start)
+        self.addStretch()
+        self.addWidget(self.span)
+        self.addStretch()
+        self.addWidget(self.stop)
+
+    def setDates(self, start, stop):
+        self.start.setText(start.ctime().replace(" 00:00:00 ", ", "))
+        self.stop.setText(stop.ctime().replace(" 00:00:00 ", ", "))
+        span = stop - start
+        self.span.setText(u"↽{}⇀".format(str(span.days)))
+        self.span.setText(u"⇐{}⇒".format(str(span.days)))
 
 class RangeSlider(QSlider):
     """---- ---- ---- ---- Slider for Ranges
@@ -201,7 +244,6 @@ class RangeSlider(QSlider):
         self._high = high
         self.update()
 
-
     def paintEvent(self, event):
 
         painter = QPainter(self)
@@ -232,6 +274,8 @@ class RangeSlider(QSlider):
             style.drawComplexControl(QStyle.CC_Slider, opt, painter, self)
 
     def mouseReleaseEvent(self, event):
+        #~ Connected: Control
+        #~ Emits to : self.graph.setSpan
         self.sliderMoved.emit(self._low, self._high)
 
     def mousePressEvent(self, event):
@@ -396,7 +440,8 @@ class Technicals(QWidget):
 
             for button in ["bottom", "down", "up", "top", "stop"]:
                 image = button + ".png"
-                buttonObj = Button(parent, image, button.capitalize())
+                buttonObj = Button(parent, image, button.capitalize(),
+                                   tooltip=tooltips.get(button))
                 self.addWidget(buttonObj)
                 buttonObj.clicked.connect(self.handle)
 
@@ -476,13 +521,26 @@ class Toolbar1(QHBoxLayout):
         entry  = TickerEntry(self)
         entry.setFixedWidth(75)
 
-        search = Button(entry, "search.png", "GetSymbolData", tooltip=search_tooltip)
-        new    = Button(parent, "new.png", "New")
-        open   = Button(parent, "open.png", "Open")
-        save   = Button(parent, "save.png", "Save")
-        pref   = Button(parent, "preferences.png", "Preferences")
-        term   = Button(parent, "terminal.png", "Terminal", tooltip=terminal_tooltip)
-        help   = Button(parent, "help.png", "Help", tooltip=help_tooltip)
+        search = Button(entry, "search.png", "GetSymbolData",
+                        tooltip=tooltips.get("search"))
+
+        new    = Button(parent, "new.png", "New",
+                        tooltip=tooltips.get("new"))
+
+        open   = Button(parent, "open.png", "Open",
+                        tooltip=tooltips.get("open"))
+
+        save   = Button(parent, "save.png", "Save",
+                        tooltip=tooltips.get("save"))
+
+        pref   = Button(parent, "preferences.png", "Preferences",
+                        tooltip=tooltips.get("pref"))
+
+        term   = Button(parent, "terminal.png", "Terminal",
+                        tooltip=tooltips.get("terminal"))
+
+        help   = Button(parent, "help.png", "Help",
+                        tooltip=tooltips.get("help"))
 
         map(self.addWidget, [symbol, entry, search])
         self.addStretch()
@@ -548,6 +606,8 @@ class Toolbar1(QHBoxLayout):
         self.control.graph.setData(data)
         self.control.graph.setDataToGraph(data)
 
+        self.control.dateRange.setDates(data[0][0], data[-1][0])
+
     def new(self, kwargs):
         print kwargs
 
@@ -601,7 +661,6 @@ class Toolbar2(QHBoxLayout):
         self.control.scrollArea.addTechnical(name)
 
     def adjustView(self, kwargs):
-
         if kwargs["id"] == "SlideView":
             parent  = kwargs["parent"]
             dy      = kwargs["pos"].y()
@@ -617,12 +676,10 @@ class Toolbar2(QHBoxLayout):
 class TickerEntry(QLineEdit):
 
     def __init__(self, parent=None):
-
         super(TickerEntry, self).__init__(None)
         self.parent = parent
 
     def keyPressEvent(self, event):
-
         if event.key() in [Qt.Key_Enter, Qt.Key_Return]:
             self.parent.getSymbolData(self)
         super(TickerEntry, self).keyPressEvent(event)
@@ -649,7 +706,8 @@ class QIPythonWidget(RichIPythonWidget):
         def get_user_namespace(self):
             return self.kernel.shell.user_ns
 
-    def __init__(self, parent=None, colors='linux', namespace=None):
+    def __init__(self, parent=None, colors='linux', namespace=None,
+                       visible=True, width=500):
         super(QIPythonWidget, self).__init__()
         self.control = parent
         self.app = self.KernelApp.instance(argv=[])
@@ -657,6 +715,8 @@ class QIPythonWidget(RichIPythonWidget):
         self.set_default_style(colors=colors)
         self.connect_kernel(self.app.get_connection_file())
         self.set_namespace(namespace)
+        self.setFixedWidth(width)
+        self.setVisible(visible)
 
     def set_namespace(self, namespace):
         if namespace and isinstance(namespace, dict):
