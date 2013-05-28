@@ -28,8 +28,14 @@ matplotlib.use('Qt4Agg') # must be called before .backends or .pylab
 
 import control # program main
 
+font = QFont()
+font.setFamily("Courier")
+font.setFixedPitch(True)
+font.setPointSize(10)
+
 app  = QApplication(sys.argv)
 app.setStyle("plastique")
+app.setFont(font)
 main = control.Control()
 main.resize(600, 400)
 main.show()

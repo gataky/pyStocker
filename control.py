@@ -21,7 +21,14 @@ from PySide.QtGui  import *
 from PySide.QtCore import *
 from globals       import *
 
-from utils import Button, Graph, RangeSlider, Technicals, Toolbar1, Toolbar2, QIPythonWidget, DateRange
+from utils import (Button,
+                   Graph,
+                   RangeSlider,
+                   Technicals,
+                   Toolbar1,
+                   Toolbar2,
+                   QIPythonWidget,
+                   DateRange)
 
 import sys
 import os
@@ -37,13 +44,13 @@ class Control(QWidget):
         self.terminalVisible = True
 
         layout1 = QHBoxLayout(self)  # Top master layout
-        layout2 = QVBoxLayout(self)  # widget on the left
-        layout3 = QVBoxLayout(self)  # terminal on the right
+        layout2 = QVBoxLayout()  # widget on the left
+        layout3 = QVBoxLayout()  # terminal on the right
 
         self.toolbar1   = Toolbar1(self)
         self.graph      = Graph(self)
         self.dateRange  = DateRange(self)
-        self.sliders    = RangeSlider(Qt.Horizontal, self)
+        self.sliders    = RangeSlider(self, Qt.Horizontal)
         self.toolbar2   = Toolbar2(self)
         self.scrollArea = ScrollArea(self)
         self.terminal   = QIPythonWidget(parent=self, namespace={"Control":self}, visible=self.terminalVisible)

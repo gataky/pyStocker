@@ -43,11 +43,13 @@ from IPython.frontend.qt.kernelmanager import QtKernelManager
 from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.config.application import catch_config_error
 
-
-QToolTip.setFont(QFont('SansSerif', 10))
+#~ Tooltip setup
 palette = QToolTip.palette()
 palette.setColor(QPalette.ToolTipText, QColor("black"))
 QToolTip.setPalette(palette)
+
+settings = QSettings("settings.conf", QSettings.NativeFormat)
+settings.value("Terminal/width", 500)
 
 tooltips = {
     "search"   : "<p><b>Search</b>: Search for the ticket entered.</p>",
@@ -124,7 +126,6 @@ class Graph(FigureCanvasQTAgg):
     Graph displaying the given ticker data.
     """
 
-
     def __init__(self, parent=None, width=10, height=10, dpi=100):
 
         figure = Figure(figsize=(width, height), dpi=dpi)
@@ -144,7 +145,6 @@ class Graph(FigureCanvasQTAgg):
         #~ figure.canvas.mpl_connect("motion_notify_event", self.motionNotifyEvent)
 
     def setSpan(self, low, high):
-        print low, high
         try:
             section = self.data[low:high+1]
         except AttributeError:
@@ -187,9 +187,11 @@ class DateRange(QHBoxLayout):
         super(DateRange, self).__init__()
 
         self.control = parent
-        self.start   = QLabel("Start:")
-        self.span    = QLabel("Span:")
-        self.stop    = QLabel("Stop:")
+        self.start   = QLabel("")
+        self.span    = QLabel("")
+        self.stop    = QLabel("")
+        layout1      = QHBoxLayout()
+        layout2      = QHBoxLayout()
 
         self.addWidget(self.start)
         self.addStretch()
@@ -201,8 +203,17 @@ class DateRange(QHBoxLayout):
         self.start.setText(start.ctime().replace(" 00:00:00 ", ", "))
         self.stop.setText(stop.ctime().replace(" 00:00:00 ", ", "))
         span = stop - start
-        self.span.setText(u"↽{}⇀".format(str(span.days)))
+        #~ self.span.setText(u"↽{}⇀".format(str(span.days)))
         self.span.setText(u"⇐{}⇒".format(str(span.days)))
+
+    def updateDates(self, low, high):
+        try:
+            low  = self.control.graph.data[low][0]
+            high = self.control.graph.data[high-1][0]
+            self.setDates(low, high)
+        except AttributeError, error:
+            #~ No data has been set to the graphing area.
+            pass
 
 class RangeSlider(QSlider):
     """---- ---- ---- ---- Slider for Ranges
@@ -216,9 +227,10 @@ class RangeSlider(QSlider):
 
     sliderMoved = Signal(int, int)
 
-    def __init__(self, *args):
+    def __init__(self, parent=None, *args):
         super(RangeSlider, self).__init__(*args)
 
+        self.control = parent
         #self.setOrientation(Qt.Horizontal)
         self._low = self.minimum()
         self._high = self.maximum()
@@ -254,7 +266,7 @@ class RangeSlider(QSlider):
             self.initStyleOption(opt)
 
             # Only draw the groove for the first slider so it doesn't get drawn
-            # on top of the existing ones every time
+            # on top of the existing one every time
             if i == 0:
                 opt.subControls = QStyle.SC_SliderGroove|QStyle.SC_SliderHandle
             else:
@@ -354,6 +366,8 @@ class RangeSlider(QSlider):
 
         self.click_offset = new_pos
         self.update()
+
+        self.control.dateRange.updateDates(self._low, self._high)
 
     def __pick(self, pt):
         if self.orientation() == Qt.Horizontal:
@@ -620,6 +634,9 @@ class Toolbar1(QHBoxLayout):
     def preferences(self, kwargs):
         print kwargs
 
+        self.foo = Preferences(self.control)
+
+
     def terminal(self, kwargs):
         self.control.terminalVisible = not self.control.terminalVisible
         if self.control.terminalVisible:
@@ -737,3 +754,41 @@ class QIPythonWidget(RichIPythonWidget):
     def closeEvent(self, event):
         self.control.terminalVisible = False
 
+
+class Preferences(QDialog):
+
+    def __init__(self, parent=None):
+        super(Preferences, self).__init__(parent)
+
+        layout = QHBoxLayout(self)
+        terminal = self.Terminal(self)
+        layout.addWidget(terminal)
+        self.exec_()
+
+
+    class Terminal(QGroupBox):
+
+        def __init__(self, parent=None, title="Terminal"):
+            super(Preferences.Terminal, self).__init__(title)
+
+            layout = QVBoxLayout(self)
+
+            term_visible = Preferences.Entry(QCheckBox, "Visible on startup?")
+            #~ term_size    = Preferences.Entry(QSpinBox, "Terminal size")
+            #~ term_color   = Preferences.Entry(QLineEdit, "Color schema")
+
+
+            layout.addWidget(term_visible)
+            #~ layout.addLayout(term_size)
+            #~ layout.addLayout(term_color)
+
+
+    class Entry(QHBoxLayout):
+        def __init__(self, widget, label, **kwargs):
+            super(Preferences.Entry, self).__init__()
+
+            self.widget = widget()
+            self.label  = QLabel(label)
+
+            self.addWidget(self.label)
+            self.addWidget(self.widget)
