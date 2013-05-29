@@ -149,17 +149,17 @@ class StockStats(QHBoxLayout):
         self.setRangeStats(data)
 
     def setDayStats(self, data):
-        self.open.setText("O:{:.2f},".format(data[1]))
-        self.high.setText("H:{:.2f},".format(data[2]))
-        self.low.setText("L:{:.2f},".format(data[3]))
-        self.close.setText("C:{:.2f},".format(data[4]))
-        self.volume.setText("V:{}".format(data[5]))
+        self.open.setText("O:{:.2f}, ".format(data[1]))
+        self.high.setText("H:{:.2f}, ".format(data[2]))
+        self.low.setText("L:{:.2f}, ".format(data[3]))
+        self.close.setText("C:{:.2f}, ".format(data[4]))
+        self.volume.setText("V:{} ".format(data[5]))
 
     def setRangeStats(self, data):
         delta = data[-1][4] - data[0][4]
         points = delta/float(data[0][4]) * 100
-        self.delta.setText(u"{:+.2f}".format(delta))
-        self.points.setText("{:+.2f}%".format(points))
+        self.delta.setText(u"{:+.2f} ".format(delta))
+        self.points.setText("{:+.2f}% ".format(points))
 
 class Graph(FigureCanvasQTAgg):
     """---- ---- ---- ---- Graph Ticker Display
