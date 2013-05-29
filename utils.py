@@ -120,6 +120,46 @@ class Button(QLabel):
     def mouseReleaseEvent(self, event):
         self.holding = False
 
+class StockStats(QHBoxLayout):
+
+    def __init__(self, parent):
+        super(StockStats, self).__init__()
+
+        self.symbol = QLabel("")
+        self.open   = QLabel("")
+        self.high   = QLabel("")
+        self.low    = QLabel("")
+        self.close  = QLabel("")
+        self.volume = QLabel("")
+        self.delta  = QLabel("")
+        self.points = QLabel("")
+
+        self.addWidget(self.symbol)
+        self.addWidget(self.open)
+        self.addWidget(self.high)
+        self.addWidget(self.low)
+        self.addWidget(self.close)
+        self.addWidget(self.volume)
+        self.addStretch()
+        self.addWidget(self.delta)
+        self.addWidget(self.points)
+
+    def initializeStats(self, symbol, data):
+        self.symbol.setText(symbol)
+        self.setRangeStats(data)
+
+    def setDayStats(self, data):
+        self.open.setText("O:{:.2f},".format(data[1]))
+        self.high.setText("H:{:.2f},".format(data[2]))
+        self.low.setText("L:{:.2f},".format(data[3]))
+        self.close.setText("C:{:.2f},".format(data[4]))
+        self.volume.setText("V:{}".format(data[5]))
+
+    def setRangeStats(self, data):
+        delta = data[-1][4] - data[0][4]
+        points = delta/float(data[0][4]) * 100
+        self.delta.setText(u"{:+.2f}".format(delta))
+        self.points.setText("{:+.2f}%".format(points))
 
 class Graph(FigureCanvasQTAgg):
     """---- ---- ---- ---- Graph Ticker Display
@@ -155,6 +195,7 @@ class Graph(FigureCanvasQTAgg):
             return
         self.control.dateRange.setDates(self.section[0][0], self.section[-1][0])
         self.setDataToGraph(self.section)
+        self.control.stockStats.setRangeStats(self.section)
 
     def setData(self, data):
         self.data       = data
@@ -194,6 +235,7 @@ class Graph(FigureCanvasQTAgg):
         print xValue, index
 
         self.setVerticleLine(xValue, "mouse")
+        self.control.stockStats.setDayStats(self.section[index])
 
     def setVerticleLine(self, point, lineType="range"):
         #~ If the left slider is left alone on start and the right slider had
@@ -682,6 +724,7 @@ class Toolbar1(QHBoxLayout):
         self.control.graph.setDataToGraph(data)
 
         self.control.dateRange.setDates(data[0][0], data[-1][0])
+        self.control.stockStats.initializeStats(ticker, data)
 
     def new(self, kwargs):
         print kwargs
@@ -784,8 +827,8 @@ class QIPythonWidget(RichIPythonWidget):
         def get_user_namespace(self):
             return self.kernel.shell.user_ns
 
-    def __init__(self, parent=None, colors='linux', namespace=None,
-                       visible=True, width=500):
+    def __init__(self, parent=None, colors="linux", namespace=None,
+                       visible=True, width=630):
         super(QIPythonWidget, self).__init__()
         self.control = parent
         self.app = self.KernelApp.instance(argv=[])

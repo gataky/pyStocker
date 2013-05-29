@@ -28,7 +28,8 @@ from utils import (Button,
                    Toolbar1,
                    Toolbar2,
                    QIPythonWidget,
-                   DateRange)
+                   DateRange,
+                   StockStats)
 
 import sys
 import os
@@ -48,6 +49,7 @@ class Control(QWidget):
         layout3 = QVBoxLayout()  # terminal on the right
 
         self.toolbar1   = Toolbar1(self)
+        self.stockStats = StockStats(self)
         self.graph      = Graph(self)
         self.dateRange  = DateRange(self)
         self.sliders    = RangeSlider(self, Qt.Horizontal)
@@ -56,6 +58,7 @@ class Control(QWidget):
         self.terminal   = QIPythonWidget(parent=self, namespace={"Control":self}, visible=self.terminalVisible)
 
         layout2.addLayout(self.toolbar1)
+        layout2.addLayout(self.stockStats)
         layout2.addWidget(self.graph)
         layout2.addLayout(self.dateRange)
         layout2.addWidget(self.sliders)
