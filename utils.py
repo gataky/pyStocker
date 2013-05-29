@@ -137,23 +137,29 @@ class Graph(FigureCanvasQTAgg):
                                hspace = 0.0)
         super(Graph, self).__init__(figure)
         self.control = parent
+        self.figure  = figure
         # Fill the area with the graph
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.axPri = figure.add_subplot(111)
         #self.axVol = self.axPri.twinx()
 
-        #~ figure.canvas.mpl_connect("motion_notify_event", self.motionNotifyEvent)
+        figure.canvas.mpl_connect("motion_notify_event", self.motionNotifyEvent)
+        self.rangeVerticleLine = None
+        self.mouseVerticleLine = None
 
     def setSpan(self, low, high):
         try:
-            section = self.data[low:high+1]
+            self.section = self.data[low:high+1]
+            self.sectionLen = len(self.section)
         except AttributeError:
             return
-        self.control.dateRange.setDates(section[0][0], section[-1][0])
-        self.setDataToGraph(section)
+        self.control.dateRange.setDates(self.section[0][0], self.section[-1][0])
+        self.setDataToGraph(self.section)
 
     def setData(self, data):
-        self.data = data
+        self.data       = data
+        self.section    = data[:]
+        self.sectionLen = len(data)
 
     def setDataToGraph(self, data):
 
@@ -176,8 +182,59 @@ class Graph(FigureCanvasQTAgg):
     def motionNotifyEvent(self, event):
         try:
             factor = float(self.dataSize)/(self.geometry().width()-1)
-            print self.data[int(round(event.x * factor, 0))]
-        except(AttributeError, IndexError):
+        except AttributeError:
+            #~ Data not yet set
+            return
+        index = int(round(event.x * factor, 0))
+        #~ Filter out event.x positions that are out of range and give errors
+        if (index >= self.sectionLen) or (index <= -1):
+            return
+        xValue = self.section[index][0]
+
+        print xValue, index
+
+        self.setVerticleLine(xValue, "mouse")
+
+    def setVerticleLine(self, point, lineType="range"):
+        #~ If the left slider is left alone on start and the right slider had
+        #~ moved, then if we try and adjust the left slider we'll get zero for
+        #~ point which will become the last element in the data and squish the
+        #~ graph to the right then redraw it.
+        if lineType == "range":
+            if point <= 0:
+                point += 1
+            x = self.data[point-1][0]
+            #~ Don't draw the graph when sliding outside of data currently shown
+            #~ Once the mouse is released the graph will be reploted.
+            if (x <= self.section[0][0]) or (x >= self.section[-1][0]):
+                return
+
+            if self.rangeVerticleLine:
+                try:
+                    self.rangeVerticleLine.remove()
+                except ValueError:
+                    pass
+            self.rangeVerticleLine = self.axPri.axvline(x=x,
+                                                        linewidth=3,
+                                                        alpha=.75,
+                                                        linestyle="-",
+                                                        color="red")
+
+        elif lineType == "mouse":
+            x = point
+            if self.mouseVerticleLine:
+                try:
+                    self.mouseVerticleLine.remove()
+                except ValueError:
+                    pass
+            self.mouseVerticleLine = self.axPri.axvline(x=x,
+                                                        linewidth=3,
+                                                        alpha=.75,
+                                                        linestyle="-",
+                                                        color="green")
+        try:
+            self.draw()
+        except RuntimeError:
             pass
 
 
@@ -296,12 +353,11 @@ class RangeSlider(QSlider):
         style = QApplication.style()
         button = event.button()
 
-        # In a normal slider control, when the user clicks on a point in the
-        # slider's total range, but not on the slider part of the control the
-        # control would jump the slider value to where the user clicked.
-        # For this control, clicks which are not direct hits will slide both
-        # slider parts
-
+        #~ In a normal slider control, when the user clicks on a point in the
+        #~ slider's total range, but not on the slider part of the control the
+        #~ control would jump the slider value to where the user clicked.
+        #~ For this control, clicks which are not direct hits will slide both
+        #~ slider parts
         if button:
             opt = QStyleOptionSlider()
             self.initStyleOption(opt)
@@ -368,6 +424,11 @@ class RangeSlider(QSlider):
         self.update()
 
         self.control.dateRange.updateDates(self._low, self._high)
+
+        if self.active_slider == 1:
+            self.control.graph.setVerticleLine(self._high)
+        elif self.active_slider == 0:
+            self.control.graph.setVerticleLine(self._low)
 
     def __pick(self, pt):
         if self.orientation() == Qt.Horizontal:

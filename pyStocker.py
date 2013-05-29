@@ -22,9 +22,9 @@ import os
 import sys
 import numpy
 
-os.environ['QT_API'] = 'pyside'
+os.environ["QT_API"] = "pyside"
 import matplotlib
-matplotlib.use('Qt4Agg') # must be called before .backends or .pylab
+matplotlib.use("Qt4Agg") # must be called before .backends or .pylab
 
 import control # program main
 
