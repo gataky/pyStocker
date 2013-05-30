@@ -53,20 +53,20 @@ settings = QSettings("settings.conf", QSettings.NativeFormat)
 settings.value("Terminal/width", 500)
 
 tooltips = {
-    "search"   : "<p><b>Search</b>: Search for the ticket entered.</p>",
-    "terminal" : "<p><b>Terminal</b>: Show the python terminal.</p>",
-    "help"     : "<p><b>Help</b>: Help decuments.</p>",
-    "new"      : "<p><b>New</b>: Create a new back-test.</p>",
-    "save"     : "<p><b>Save</b>: Save the current back-test.</p>",
-    "pref"     : "<p><b>Preferences</b>: Customize PyStocker.</p>",
-    "open"     : "<p><b>Open</b>: Open a previous back-test.</p>",
+    "search"  :"<p><b>Search</b>: Search for the ticket entered.</p>",
+    "terminal":"<p><b>Terminal</b>: Show the python terminal.</p>",
+    "help"    :"<p><b>Help</b>: Help decuments.</p>",
+    "new"     :"<p><b>New</b>: Create a new back-test.</p>",
+    "save"    :"<p><b>Save</b>: Save the current back-test.</p>",
+    "pref"    :"<p><b>Preferences</b>: Customize PyStocker.</p>",
+    "open"    :"<p><b>Open</b>: Open a previous back-test.</p>",
 
     #~ Techincal button tooltips
-    "bottom" : "<p><b>Bottom</b>: Move to the bottom of the technical stack.</p>",
-    "down"   : "<p><b>Down</b>: Move down one in the stack.</p>",
-    "up"     : "<p><b>Up</b>: Move up one in the stack.</p>",
-    "top"    : "<p><b>Top</b>: Move to the top of the technical the stack.</p>",
-    "stop"   : "<p><b>Stop</b>: Remove the technical from the stack.</p>",
+    "bottom":"<p><b>Bottom</b>: Move to the bottom of the technical stack.</p>",
+    "down"  :"<p><b>Down</b>: Move down one in the stack.</p>",
+    "up"    :"<p><b>Up</b>: Move up one in the stack.</p>",
+    "top"   :"<p><b>Top</b>: Move to the top of the technical the stack.</p>",
+    "stop"  :"<p><b>Stop</b>: Remove the technical from the stack.</p>",
     }
 
 class Button(QLabel):
@@ -82,7 +82,8 @@ class Button(QLabel):
 
     clicked = Signal(list)
 
-    def __init__(self, parent=None, image=None, id=None, moveable=False, tooltip=None):
+    def __init__(self, parent=None, image=None, id=None, moveable=False,
+                                                                tooltip=None):
         super(Button, self).__init__(parent)
 
         self.image = os.path.join("imgs", image)
@@ -157,10 +158,11 @@ class StockStats(QHBoxLayout):
         self.volume.setText("V:{} ".format(data["volume"]))
 
     def setRangeStats(self, data):
-        delta = data.irow(-1)[4] - data.irow(0)[4]
-        points = delta/float(data.irow(0)[4]) * 100
-        self.delta.setText(u"{:+.2f} ".format(delta))
+        delta = data.irow(-1)["close"] - data.irow(0)["close"]
+        points = delta/float(data.irow(0)["close"]) * 100
+        self.delta.setText("{:+.2f} ".format(delta))
         self.points.setText("{:+.2f}% ".format(points))
+
 
 class Graph(FigureCanvasQTAgg):
     """---- ---- ---- ---- Graph Ticker Display
@@ -194,7 +196,10 @@ class Graph(FigureCanvasQTAgg):
             self.sectionLen = len(self.section)
         except AttributeError:
             return
-        self.control.dateRange.setDates(self.section.irow(0).name, self.section.irow(-1).name)
+
+        startDate = self.section.irow(0)
+        stopDate  = self.section.irow(-1)
+        self.control.dateRange.setDates(startDate.name, stopDate.name)
         self.setDataToGraph(self.section)
         self.control.stockStats.setRangeStats(self.section)
 
@@ -246,10 +251,12 @@ class Graph(FigureCanvasQTAgg):
         if lineType == "range":
             if point <= 0:
                 point += 1
-            x = self.data.irow(point-1)[0]
+            x = self.data.irow(point-1).name
             #~ Don't draw the graph when sliding outside of data currently shown
             #~ Once the mouse is released the graph will be reploted.
-            if (x <= self.section.irow(0)[0]) or (x >= self.section.irow(-1)[0]):
+            lowerDate = self.section.irow(0)
+            upperDate = self.section.irow(-1)
+            if (x <= lowerDate.name) or (x >= upperDate.name):
                 return
 
             if self.rangeVerticleLine:
@@ -518,6 +525,7 @@ class Technicals(QWidget):
         super(Technicals, self).__init__(parent)
         self.layout  = QVBoxLayout(self)
         self.widgets = []
+        self.control = parent
         # don't allow added widgets to expand in size
         self.layout.setSizeConstraint(QLayout.SetMaximumSize)
 
@@ -534,6 +542,7 @@ class Technicals(QWidget):
             super(Technicals.Technical, self).__init__(parent)
 
             self.technicals = parent
+            self.groupName  = techName
             self.setTitle(techName)
 
             # Expand on H compress on V
@@ -545,6 +554,9 @@ class Technicals(QWidget):
             graph = QGraphicsView()
             graph.setFixedHeight(25)
             layout.addWidget(graph)
+
+        def mouseDoubleClickEvent(self, event):
+            changeName = ChangeName(self, self.groupName)
 
 
     class TechBar(QHBoxLayout):
@@ -853,40 +865,33 @@ class QIPythonWidget(RichIPythonWidget):
         self.control.terminalVisible = False
 
 
-class Preferences(QDialog):
+class ChangeName(QDialog):
 
-    def __init__(self, parent=None):
-        super(Preferences, self).__init__(parent)
+    def __init__(self, parent, currentName):
+        super(ChangeName, self).__init__()
+        top     = QVBoxLayout(self)
+        layout  = QHBoxLayout()
+        layoutb = QHBoxLayout()
+        ok      = QPushButton("OK")
+        cancle  = QPushButton("Cancle")
 
-        layout = QHBoxLayout(self)
-        terminal = self.Terminal(self)
-        layout.addWidget(terminal)
+        self.parent  = parent
+        self.newName = QLineEdit()
+        self.newName.setPlaceholderText(currentName)
+
+        layout.addWidget(self.newName)
+        layoutb.addWidget(ok)
+        layoutb.addWidget(cancle)
+        top.addLayout(layout)
+        top.addLayout(layoutb)
+
+        ok.clicked.connect(self.changeName)
+        cancle.clicked.connect(self.reject)
+
         self.exec_()
 
-
-    class Terminal(QGroupBox):
-
-        def __init__(self, parent=None, title="Terminal"):
-            super(Preferences.Terminal, self).__init__(title)
-
-            layout = QVBoxLayout(self)
-
-            term_visible = Preferences.Entry(QCheckBox, "Visible on startup?")
-            #~ term_size    = Preferences.Entry(QSpinBox, "Terminal size")
-            #~ term_color   = Preferences.Entry(QLineEdit, "Color schema")
-
-
-            layout.addWidget(term_visible)
-            #~ layout.addLayout(term_size)
-            #~ layout.addLayout(term_color)
-
-
-    class Entry(QHBoxLayout):
-        def __init__(self, widget, label, **kwargs):
-            super(Preferences.Entry, self).__init__()
-
-            self.widget = widget()
-            self.label  = QLabel(label)
-
-            self.addWidget(self.label)
-            self.addWidget(self.widget)
+    def changeName(self):
+        name = self.newName.text()
+        if name:
+            self.parent.setTitle(name)
+        self.reject()
