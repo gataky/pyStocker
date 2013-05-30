@@ -55,7 +55,7 @@ class Control(QWidget):
         self.sliders    = RangeSlider(self, Qt.Horizontal)
         self.toolbar2   = Toolbar2(self)
         self.scrollArea = ScrollArea(self)
-        self.terminal   = QIPythonWidget(parent=self, namespace={"Control":self}, visible=self.terminalVisible)
+        #~ self.terminal   = QIPythonWidget(parent=self, namespace={"Control":self}, visible=self.terminalVisible)
 
         layout2.addLayout(self.toolbar1)
         layout2.addLayout(self.stockStats)
@@ -65,7 +65,7 @@ class Control(QWidget):
         layout2.addLayout(self.toolbar2)
         layout2.addWidget(self.scrollArea)
 
-        layout3.addWidget(self.terminal)
+        #~ layout3.addWidget(self.terminal)
 
         layout1.addLayout(layout2)
         layout1.addLayout(layout3)

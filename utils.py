@@ -36,6 +36,7 @@ import matplotlib.mlab    as mlab
 import urllib2
 import datetime
 import atexit
+import pandas
 
 from IPython.zmq.ipkernel import IPKernelApp
 from IPython.lib.kernel import find_connection_file
@@ -149,15 +150,15 @@ class StockStats(QHBoxLayout):
         self.setRangeStats(data)
 
     def setDayStats(self, data):
-        self.open.setText("O:{:.2f}, ".format(data[1]))
-        self.high.setText("H:{:.2f}, ".format(data[2]))
-        self.low.setText("L:{:.2f}, ".format(data[3]))
-        self.close.setText("C:{:.2f}, ".format(data[4]))
-        self.volume.setText("V:{} ".format(data[5]))
+        self.open.setText("O:{:.2f}, ".format(data["open"]))
+        self.high.setText("H:{:.2f}, ".format(data["high"]))
+        self.low.setText("L:{:.2f}, ".format(data["low"]))
+        self.close.setText("C:{:.2f}, ".format(data["close"]))
+        self.volume.setText("V:{} ".format(data["volume"]))
 
     def setRangeStats(self, data):
-        delta = data[-1][4] - data[0][4]
-        points = delta/float(data[0][4]) * 100
+        delta = data.irow(-1)[4] - data.irow(0)[4]
+        points = delta/float(data.irow(0)[4]) * 100
         self.delta.setText(u"{:+.2f} ".format(delta))
         self.points.setText("{:+.2f}% ".format(points))
 
@@ -193,7 +194,7 @@ class Graph(FigureCanvasQTAgg):
             self.sectionLen = len(self.section)
         except AttributeError:
             return
-        self.control.dateRange.setDates(self.section[0][0], self.section[-1][0])
+        self.control.dateRange.setDates(self.section.irow(0)[0], self.section.irow(-1)[0])
         self.setDataToGraph(self.section)
         self.control.stockStats.setRangeStats(self.section)
 
@@ -205,7 +206,7 @@ class Graph(FigureCanvasQTAgg):
     def setDataToGraph(self, data):
 
         self.axPri.axes.hold(False)
-        self.axPri.plot_date(data.date, data.close, "-")
+        self.axPri.plot_date(data.index, data["close"], "-")
         self.axPri.set_yscale(Y_AXIS_SCALE)
 
         self.axPri.yaxis.grid(color     = Y_AXIS_GRID_COLOR,
@@ -217,7 +218,7 @@ class Graph(FigureCanvasQTAgg):
                               which     = "major")
 
         self.axPri.set_axisbelow(True)
-        self.dataSize = data.size
+        self.dataSize = len(data)
         self.draw()
 
     def motionNotifyEvent(self, event):
@@ -230,12 +231,12 @@ class Graph(FigureCanvasQTAgg):
         #~ Filter out event.x positions that are out of range and give errors
         if (index >= self.sectionLen) or (index <= -1):
             return
-        xValue = self.section[index][0]
+        xValue = self.section.irow(index)[0]
 
         print xValue, index
 
         self.setVerticleLine(xValue, "mouse")
-        self.control.stockStats.setDayStats(self.section[index])
+        self.control.stockStats.setDayStats(self.section.irow(index))
 
     def setVerticleLine(self, point, lineType="range"):
         #~ If the left slider is left alone on start and the right slider had
@@ -245,10 +246,10 @@ class Graph(FigureCanvasQTAgg):
         if lineType == "range":
             if point <= 0:
                 point += 1
-            x = self.data[point-1][0]
+            x = self.data.irow(point-1)[0]
             #~ Don't draw the graph when sliding outside of data currently shown
             #~ Once the mouse is released the graph will be reploted.
-            if (x <= self.section[0][0]) or (x >= self.section[-1][0]):
+            if (x <= self.section.irow(0)[0]) or (x >= self.section.irow(-1)[0]):
                 return
 
             if self.rangeVerticleLine:
@@ -307,8 +308,8 @@ class DateRange(QHBoxLayout):
 
     def updateDates(self, low, high):
         try:
-            low  = self.control.graph.data[low][0]
-            high = self.control.graph.data[high-1][0]
+            low  = self.control.graph.data.irow(low)[0]
+            high = self.control.graph.data.irow(high-1)[0]
             self.setDates(low, high)
         except AttributeError, error:
             #~ No data has been set to the graphing area.
@@ -696,6 +697,8 @@ class Toolbar1(QHBoxLayout):
                 with finance.fetch_historical_yahoo(ticker, start, end) as fh:
                     data = mlab.csv2rec(fh)
                 data.sort()
+                data = pandas.DataFrame(data)
+                data = data.set_index("date")
             except urllib2.HTTPError:
                 if attempt == 2:
                     return
@@ -706,24 +709,15 @@ class Toolbar1(QHBoxLayout):
                 except Exception, error:
                     return
 
-        factor = int(DEFAULT_ZOOM[0])
-        if DEFAULT_ZOOM in ["1d", "5d"]:
-            startZoom = end - datetime.timedelta(days=factor)
-            zoomIndex = data.size - factor
-
-        elif DEFAULT_ZOOM in ["1m", "3m", "6m"]:
-            startZoom = end - datetime.timedelta(days=factor*365/12)
-            zoomIndex = 1
-
         self.control.sliders.setMinimum(0)
-        self.control.sliders.setMaximum(data.size)
+        self.control.sliders.setMaximum(len(data))
         self.control.sliders.setLow(0)
-        self.control.sliders.setHigh(data.size)
+        self.control.sliders.setHigh(len(data))
 
         self.control.graph.setData(data)
         self.control.graph.setDataToGraph(data)
 
-        self.control.dateRange.setDates(data[0][0], data[-1][0])
+        self.control.dateRange.setDates(data.irow(0)[0], data.irow(-1)[0])
         self.control.stockStats.initializeStats(ticker, data)
 
     def new(self, kwargs):
