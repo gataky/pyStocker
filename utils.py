@@ -194,7 +194,7 @@ class Graph(FigureCanvasQTAgg):
             self.sectionLen = len(self.section)
         except AttributeError:
             return
-        self.control.dateRange.setDates(self.section.irow(0)[0], self.section.irow(-1)[0])
+        self.control.dateRange.setDates(self.section.irow(0).name, self.section.irow(-1).name)
         self.setDataToGraph(self.section)
         self.control.stockStats.setRangeStats(self.section)
 
@@ -231,7 +231,7 @@ class Graph(FigureCanvasQTAgg):
         #~ Filter out event.x positions that are out of range and give errors
         if (index >= self.sectionLen) or (index <= -1):
             return
-        xValue = self.section.irow(index)[0]
+        xValue = self.section.irow(index).name
 
         print xValue, index
 
@@ -300,8 +300,8 @@ class DateRange(QHBoxLayout):
         self.addWidget(self.stop)
 
     def setDates(self, start, stop):
-        self.start.setText(start.ctime().replace(" 00:00:00 ", ", "))
-        self.stop.setText(stop.ctime().replace(" 00:00:00 ", ", "))
+        self.start.setText(start.ctime().replace("00:00:00 ", ""))
+        self.stop.setText(stop.ctime().replace("00:00:00 ", ""))
         span = stop - start
         #~ self.span.setText(u"↽{}⇀".format(str(span.days)))
         self.span.setText(u"⇐{}⇒".format(str(span.days)))
@@ -717,7 +717,7 @@ class Toolbar1(QHBoxLayout):
         self.control.graph.setData(data)
         self.control.graph.setDataToGraph(data)
 
-        self.control.dateRange.setDates(data.irow(0)[0], data.irow(-1)[0])
+        self.control.dateRange.setDates(data.irow(0).name, data.irow(-1).name)
         self.control.stockStats.initializeStats(ticker, data)
 
     def new(self, kwargs):
