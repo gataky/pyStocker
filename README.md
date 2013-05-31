@@ -9,8 +9,8 @@ PyStocker will be a stock analysis program where back testing is intuitive and s
 Dependencies
 ============
 
-pyside
-ipython
-pandas
-matplotlib
-ta-lib
+* pyside
+* ipython
+* pandas
+* matplotlib
+* ta-lib
