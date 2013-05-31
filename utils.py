@@ -44,6 +44,12 @@ from IPython.frontend.qt.kernelmanager import QtKernelManager
 from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 from IPython.config.application import catch_config_error
 
+#~ Setup for abstract api calls
+import talib
+for func in talib.func.__all__:
+    _ = talib.abstract.Function(func)
+from talib.abstract import *
+
 #~ Tooltip setup
 palette = QToolTip.palette()
 palette.setColor(QPalette.ToolTipText, QColor("black"))
@@ -208,6 +214,8 @@ class Graph(FigureCanvasQTAgg):
         self.section    = data[:]
         self.sectionLen = len(data)
 
+        self.control.terminal.updateNamespace("data", data)
+
     def setDataToGraph(self, data):
 
         self.axPri.axes.hold(False)
@@ -237,9 +245,6 @@ class Graph(FigureCanvasQTAgg):
         if (index >= self.sectionLen) or (index <= -1):
             return
         xValue = self.section.irow(index).name
-
-        print xValue, index
-
         self.setVerticleLine(xValue, "mouse")
         self.control.stockStats.setDayStats(self.section.irow(index))
 
@@ -770,8 +775,10 @@ class Toolbar2(QHBoxLayout):
         combo = QComboBox()
         add   = Button(combo, "add.png", "AddTechnical")
         move  = Button(parent, "remove.png", "SlideView", True)
-
-        combo.addItems(TECHNICALS.keys())
+        funcs = map(lambda name: eval("{}.info['display_name']".format(name)),
+                                                            talib.func.__all__)
+        combo.addItems(funcs)
+        combo.setFixedWidth(200)
 
         map(self.addWidget, [label, combo, add])
         self.addStretch()
@@ -834,7 +841,7 @@ class QIPythonWidget(RichIPythonWidget):
             return self.kernel.shell.user_ns
 
     def __init__(self, parent=None, colors="linux", namespace=None,
-                       visible=True, width=630):
+                       visible=True, width=900):
         super(QIPythonWidget, self).__init__()
         self.control = parent
         self.app = self.KernelApp.instance(argv=[])
@@ -842,7 +849,6 @@ class QIPythonWidget(RichIPythonWidget):
         self.set_default_style(colors=colors)
         self.connect_kernel(self.app.get_connection_file())
         self.set_namespace(namespace)
-        self.setFixedWidth(width)
         self.setVisible(visible)
 
     def set_namespace(self, namespace):
@@ -863,6 +869,10 @@ class QIPythonWidget(RichIPythonWidget):
 
     def closeEvent(self, event):
         self.control.terminalVisible = False
+
+    def updateNamespace(self, key, value):
+        namespace = self.get_user_namespace()
+        namespace[key] = value
 
 
 class ChangeName(QDialog):
