@@ -23,6 +23,7 @@ if __name__ == "__main__":
 from PySide.QtGui  import *
 from PySide.QtCore import *
 from globals       import *
+from collections   import OrderedDict
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.figure                  import Figure
@@ -46,9 +47,12 @@ from IPython.config.application import catch_config_error
 
 #~ Setup for abstract api calls
 import talib
-for func in talib.func.__all__:
-    _ = talib.abstract.Function(func)
+fs = talib.func.__all__
+for f in fs:
+    _ = talib.abstract.Function(f)
 from talib.abstract import *
+
+FUNC_CODE_LOOKUP = {eval("{}.info['display_name']".format(f)): f for f in fs}
 
 #~ Tooltip setup
 palette = QToolTip.palette()
@@ -214,7 +218,7 @@ class Graph(FigureCanvasQTAgg):
         self.section    = data[:]
         self.sectionLen = len(data)
 
-        self.control.terminal.updateNamespace("data", data)
+        #~ self.control.terminal.updateNamespace("data", data)
 
     def setDataToGraph(self, data):
 
@@ -530,12 +534,13 @@ class Technicals(QWidget):
         super(Technicals, self).__init__(parent)
         self.layout  = QVBoxLayout(self)
         self.widgets = []
-        self.control = parent
+        self.scroll  = parent
         # don't allow added widgets to expand in size
         self.layout.setSizeConstraint(QLayout.SetMaximumSize)
 
     def addTechnical(self, technicalName):
-        tech = self.Technical(self, technicalName)
+        funcCode = FUNC_CODE_LOOKUP[technicalName]
+        tech = self.Technical(self, funcCode, technicalName)
         self.layout.addWidget(tech)
         self.widgets.append(tech)
 
@@ -543,67 +548,112 @@ class Technicals(QWidget):
     class Technical(QGroupBox):
         """Handles all actions for one technical"""
 
-        def __init__(self, parent=None, techName=None):
+        def __init__(self, parent=None, techName=None, techDisplayName=None):
             super(Technicals.Technical, self).__init__(parent)
 
             self.technicals = parent
             self.groupName  = techName
-            self.setTitle(techName)
+            self.function   = eval(techName)
 
             # Expand on H compress on V
             self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
 
             layout = QVBoxLayout(self)
-            layout.addLayout(Technicals.TechBar(self, TECHNICALS[techName]))
+
+            tech = Technicals.TechBar(self, eval(techName))
+            layout.addLayout(tech)
 
             graph = QGraphicsView()
+            graph = Graph(self)
             graph.setFixedHeight(25)
             layout.addWidget(graph)
+
+            stockData = self.technicals.scroll.control.graph.data
+            graph.setData(stockData)
+            graph.setDataToGraph(stockData)
+
+            self.setTitle()
 
         def mouseDoubleClickEvent(self, event):
             changeName = ChangeName(self, self.groupName)
 
+        def setTitle(self):
+            formal = self.function.info["display_name"]
+            code   = self.function.info["name"]
+            title  = "{} ({})".format(formal, code)
+            super(Technicals.Technical, self).setTitle(title)
 
     class TechBar(QHBoxLayout):
-        """Toolbar that accepts technical parameters and placement buttons"""
 
-        def __init__(self, parent=None, parameters=None):
-            super(Technicals.TechBar, self).__init__(None)
+        def __init__(self, parent, abstractFunction):
+            super(Technicals.TechBar, self).__init__()
+            self.technical  = parent
+            self.function   = abstractFunction
+            self.inputs     = OrderedDict()
+            self.parameters = OrderedDict()
 
-            self.technical = parent
-            self.setParameters(parameters)
+            self.setParameters(self.function.input_names.items(), "inputs")
+            self.addStretch()
 
+            self.setParameters(self.function.parameters.items(), "parameters")
+            self.addStretch()
+
+            self.setNavigationButtons()
+
+        def setNavigationButtons(self):
+            group = QHBoxLayout()
             for button in ["bottom", "down", "up", "top", "stop"]:
                 image = button + ".png"
-                buttonObj = Button(parent, image, button.capitalize(),
-                                   tooltip=tooltips.get(button))
-                self.addWidget(buttonObj)
+                buttonObj = Button(self.technical, image, button.capitalize())
+                                   #~ tooltip=tooltips.get(button))
+                group.addWidget(buttonObj)
                 buttonObj.clicked.connect(self.handle)
+            self.addLayout(group)
 
-        def setParameters(self, params):
+        def setParameters(self, parameters, param_type):
+            groups = QHBoxLayout()
+            groups.setSizeConstraint(QLayout.SetFixedSize)
 
-            for key in xrange(len(params)-1):
-                parm = getattr(sys.modules[__name__], params[key]["class"])
-                parm = parm()
+            for parameter, default in parameters:
+                if isinstance(default, list):
+                    layout = self.setListParameters(parameter, default, param_type)
+                    groups.addLayout(layout)
+                else:
+                    widget = QLineEdit()
+                    widget.setFixedWidth(50)
+                    widget.setPlaceholderText(str(default))
+                    label = QLabel(parameter)
+                    label.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+                    group = QHBoxLayout()
+                    group.addWidget(label)
+                    group.addWidget(widget)
+                    groups.addLayout(group)
 
-                for method in params[key]["methods"]:
-                    # method == [class method, [args]]
-                    try:
-                        # method takes one arg
-                        getattr(parm, method[0]).__call__(method[1])
-                    except TypeError:
-                        # method takes more than one arg thus the "*". This will
-                        # unpack method[1] into the method.
-                        getattr(parm, method[0]).__call__(*method[1])
+                if param_type == "inputs":
+                    self.inputs[parameter] = default
+                elif param_type == "parameters":
+                    self.parameters[parameter] = default
 
-                self.addWidget(QLabel(params[key]["name"]))
-                self.addWidget(parm)
+            self.addLayout(groups)
 
-            update = Button(self.technical, "refresh.png", "UpdateTech")
-            update.clicked.connect(self.updateTechnical)
+        def setListParameters(self, parameter, default, param_type):
+            label = QLabel(parameter)
+            label.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+            group = QHBoxLayout()
+            group.addWidget(label)
 
-            self.addWidget(update)
-            self.addStretch()
+            if param_type == "inputs":
+                self.inputs[parameter] = default
+            elif param_type == "parameters":
+                self.parameters[parameter] = default
+
+            for item in default:
+                widget = QLineEdit()
+                widget.setFixedWidth(50)
+                widget.setPlaceholderText(item)
+                group.addWidget(widget)
+
+            return group
 
         def handle(self, kwargs):
 
@@ -775,10 +825,10 @@ class Toolbar2(QHBoxLayout):
         combo = QComboBox()
         add   = Button(combo, "add.png", "AddTechnical")
         move  = Button(parent, "remove.png", "SlideView", True)
-        funcs = map(lambda name: eval("{}.info['display_name']".format(name)),
-                                                            talib.func.__all__)
+        funcs = sorted(FUNC_CODE_LOOKUP.keys())
+
         combo.addItems(funcs)
-        combo.setFixedWidth(200)
+        combo.setFixedWidth(400)
 
         map(self.addWidget, [label, combo, add])
         self.addStretch()

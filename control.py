@@ -42,7 +42,7 @@ class Control(QWidget):
         super(Control, self).__init__(parent)
 
         self.exit            = False
-        self.terminalVisible = True
+        self.terminalVisible = False
 
         layout1 = QHBoxLayout(self)  # Top master layout
         layout2 = QVBoxLayout()  # widget on the left
@@ -67,7 +67,7 @@ class Control(QWidget):
         layout2.addLayout(self.toolbar2)
         layout2.addWidget(self.scrollArea)
 
-        #~ layout3.addWidget(self.terminal)
+        layout3.addWidget(self.terminal)
 
         layout1.addLayout(layout2)
         layout1.addLayout(layout3)
