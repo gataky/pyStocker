@@ -179,7 +179,7 @@ class Graph(FigureCanvasQTAgg):
     Graph displaying the given ticker data.
     """
 
-    def __init__(self, parent=None, width=10, height=10, dpi=100):
+    def __init__(self, parent=None, width=10, height=10, dpi=100, graph="main"):
 
         figure = Figure(figsize=(width, height), dpi=dpi)
         figure.subplots_adjust(left   = 0.0,
@@ -199,6 +199,7 @@ class Graph(FigureCanvasQTAgg):
         figure.canvas.mpl_connect("motion_notify_event", self.motionNotifyEvent)
         self.rangeVerticleLine = None
         self.mouseVerticleLine = None
+        self.graphType         = graph
 
     def setSpan(self, low, high):
         try:
@@ -250,7 +251,13 @@ class Graph(FigureCanvasQTAgg):
             return
         xValue = self.section.irow(index).name
         self.setVerticleLine(xValue, "mouse")
-        self.control.stockStats.setDayStats(self.section.irow(index))
+
+        if self.graphType == "main":
+            self.control.stockStats.setDayStats(self.section.irow(index))
+        else:
+            #~ Technical do something.
+            pass
+
 
     def setVerticleLine(self, point, lineType="range"):
         #~ If the left slider is left alone on start and the right slider had
@@ -563,12 +570,17 @@ class Technicals(QWidget):
             tech = Technicals.TechBar(self, eval(techName))
             layout.addLayout(tech)
 
-            graph = QGraphicsView()
-            graph = Graph(self)
-            graph.setFixedHeight(25)
+            graph = Graph(self, graph="technical")
+            graph.setFixedHeight(75)
             layout.addWidget(graph)
 
             stockData = self.technicals.scroll.control.graph.data
+            temp = stockData.to_records()
+            temp = {k: temp[k] for k in stockData.columns}
+
+            import ipdb; ipdb.set_trace()
+
+            stockData = self.function(stockData)
             graph.setData(stockData)
             graph.setDataToGraph(stockData)
 
