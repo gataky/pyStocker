@@ -577,8 +577,6 @@ class Technicals(QWidget):
             module        = __import__("talib.abstract", fromlist=["*"])
             self.function = getattr(module, techName)
 
-            import ipdb; ipdb.set_trace()
-
             temp = self.function(temp)
             stockData['close'] = temp
             graph.setData(stockData)
