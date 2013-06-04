@@ -48,13 +48,10 @@ from IPython.config.application import catch_config_error
 #~ Setup for abstract api calls
 import talib
 fs = talib.func.__all__
-for f in fs:
-    _ = talib.abstract.Function(f)
 from talib.abstract import *
-
 FUNC_CODE_LOOKUP = {eval("{}.info['display_name']".format(f)): f for f in fs}
 
-#~ Tooltip setup
+#~ Tooltip setupSM
 palette = QToolTip.palette()
 palette.setColor(QPalette.ToolTipText, QColor("black"))
 QToolTip.setPalette(palette)
@@ -560,7 +557,6 @@ class Technicals(QWidget):
 
             self.technicals = parent
             self.groupName  = techName
-            self.function   = eval(techName)
 
             # Expand on H compress on V
             self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
@@ -578,9 +574,13 @@ class Technicals(QWidget):
             temp = stockData.to_records()
             temp = {k: temp[k] for k in stockData.columns}
 
+            module        = __import__("talib.abstract", fromlist=["*"])
+            self.function = getattr(module, techName)
+
             import ipdb; ipdb.set_trace()
 
-            stockData = self.function(stockData)
+            temp = self.function(temp)
+            stockData['close'] = temp
             graph.setData(stockData)
             graph.setDataToGraph(stockData)
 
